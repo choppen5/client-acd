@@ -1,0 +1,364 @@
+require 'rubygems'
+require 'sinatra'
+require 'sinatra/config_file' #Config
+require 'twilio-ruby'
+require 'json'
+require 'sinatra'
+require 'sinatra-websocket'
+require 'pp'
+
+set :server, 'thin'
+set :sockets, []
+ 
+disable :protection
+
+config_file 'config_file.yml'
+
+############ CONFIG ###########################
+# Find these values at twilio.com/user/account
+account_sid = settings.account_sid
+auth_token =  settings.auth_token
+app_id = settings.app_id
+
+# put your default Twilio Client name here, for when a phone number isn't given
+default_client = settings.default_client
+caller_id = settings.caller_id  #number your agents will click2dialfrom
+default_queue = settings.default_queue #need to change this to a sid?
+queue_id = settings.queue_id  #hardcoded! need to return a queue by friendly name..
+
+dqueueurl = settings.dqueueurl
+
+
+@client = Twilio::REST::Client.new(account_sid, auth_token)
+#queue = @client.account.queues.create(:friendly_name => default_queue )
+
+################ ACCOUNTS ################
+
+# shortcut to grab your account object (account_sid is inferred from the client's auth credentials)
+@account = @client.account
+@queues = @account.queues.list
+#puts "queues = #{@queues}"
+
+#hardcoded queue... change this to grab a configured queue
+queue1 = @account.queues.get(queue_id)
+
+
+#puts "queue wait time: #{queue.average_wait_time}"
+
+userlist = Hash.new
+activeusers = 0
+
+$sum = 0
+
+#Starting ACD processing thread
+#todo - add exception handling for threads
+Thread.new do 
+  while true do
+     sleep 1
+     $sum += 1
+
+     #print out users
+     userlist.each do |key, value|
+      puts "#{key} = #{value}"
+      activeusers += 1 if value.first == "Ready"
+    end
+
+     topmember = 0
+     callerinqueue = false
+     @members = queue1.members
+     @members.list.each do |m|
+        puts "Sid: #{m.call_sid}"
+        puts "Date Enqueue: #{m.date_enqueued}"
+        puts "Wait_Time: #{m.wait_time} "
+        puts "Position: #{m.position}"
+        if topmember == 0
+            topmember = m
+            callerinqueue = true 
+        end
+
+    end 
+ 
+
+
+
+      if callerinqueue #only check for route if there is a queue member
+        bestclient = getlongestidle(userlist)
+        if bestclient == "NoReadyAgents"  
+          #nobody to take the call... should redirect to a queue here
+          puts "No ready agents.. keeq waiting...."
+        else
+          puts "Found best client! #{bestclient}"
+          topmember.dequeue(dqueueurl)
+          #get clients phone number, if any
+        end 
+      end 
+
+     #puts "average queue wait time: #{queue1.average_wait_time}"
+     #puts "queue depth = #{queue.depth}"
+     puts "run = #{$sum} #{Time.now}"
+  end
+end
+
+Thread.abort_on_exception = true
+
+
+get '/' do
+  #for hmtl client
+  if !request.websocket? 
+    client_name = params[:client]
+      if client_name.nil?
+        client_name = default_client
+      end
+      
+      capability = Twilio::Util::Capability.new account_sid, auth_token
+      # Create an application sid at twilio.com/user/account/apps and use it here
+      capability.allow_client_outgoing app_id 
+      capability.allow_client_incoming client_name
+      token = capability.generate
+      erb :index, :locals => {:token => token, :client_name => client_name}
+  else
+    request.websocket do |ws|
+      ws.onopen do
+        puts ws.object_id 
+        querystring = ws.request["query"]
+        #querry should be something like wsclient=coppenheimerATvccsystemsDOTcom
+        
+        clientname = querystring.split(/\=/)[1]
+
+        if userlist.has_key?(clientname)
+          currentclientcount = userlist[clientname][2] || 0
+          newclientcount = currentclientcount + 1
+        else 
+          #user didn't exist, create them
+          newclientcount = 1
+        end  
+        userlist[clientname] = [" ", Time.now.to_f,newclientcount ]
+        settings.sockets << ws
+        
+      end
+      ws.onmessage do |msg|
+        puts "got websocket message"
+        EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
+      end
+      ws.onclose do
+        warn("wetbsocket closed")
+        querystring = ws.request["query"]
+        clientname = querystring.split(/\=/)[1]
+
+        settings.sockets.delete(ws)
+        
+        currentclientcount = userlist[clientname][2]
+        newclientcount = currentclientcount - 1
+        userlist[clientname][2] = newclientcount
+
+
+        #remove client count
+
+      end
+    end
+  end
+end
+
+
+
+#for incoming voice calls.. not for client to client routing (move that elsewhere)
+post '/voice' do
+    number = params[:PhoneNumber]
+
+
+    bestclient = getlongestidle(userlist)
+      if bestclient == "NoReadyAgents"  
+          #nobody to take the call... should redirect to a queue here
+          puts "No ready client!..should hold.. queue.. etc here." 
+          dialqueue = default_queue 
+      else
+          puts "Found best client! #{bestclient}"
+          client_name = bestclient
+          #get clients phone number, if any
+      end 
+
+    #if no client is choosen, route to queue
+
+
+
+    response = Twilio::TwiML::Response.new do |r|  
+
+        if dialqueue  #no agents avalible
+            r.Say("Please wait for the next availible agent ")
+            r.Enqueue(dialqueue)
+            #r.Redirect('/wait')
+        else      #send to best agent   
+            r.Dial(:timeout=>"18", :action=>"/handleDialCallStatus")  do |d|
+                puts "dialing client #{client_name}"
+                d.Client client_name
+                
+            end
+        end
+    end
+    puts "response text = #{response.text}"
+    response.text
+end
+
+
+post '/handleDialCallStatus' do
+
+  puts "HANDLEDIALCALLSTATUS params = #{params}"
+  #todo - log this info?
+
+
+  response = Twilio::TwiML::Response.new do |r| 
+
+      #consider logging all of this?
+      if params['DialCallStatus'] == "no-answer"
+        r.Redirect('/voice')
+      else
+        r.Hangup
+      end
+  end
+  puts "response.text  = #{response.text}"
+  response.text
+
+end
+
+
+
+post '/dial' do
+    number = params[:PhoneNumber]
+    client_name = params[:client]
+    if client_name.nil?
+        client_name = default_client
+    end
+    response = Twilio::TwiML::Response.new do |r|
+        # outboudn dialing (from client) must have a :callerId
+        
+        r.Dial :callerId => caller_id do |d|
+            # Test to see if the PhoneNumber is a number, or a Client ID. In
+            # this case, we detect a Client ID by the presence of non-numbers
+            # in the PhoneNumber parameter.
+            puts "for callerid: #{caller_id}"
+            if /^[\d\+\-\(\) ]+$/.match(number)
+                d.Number(CGI::escapeHTML number)
+                puts "matched number!"
+                else
+                d.Client client_name
+                puts "matched cliennt"
+            end
+        end
+    end
+    puts response.text
+    response.text
+end
+
+### queue stuff
+post '/caller' do
+   response = Twilio::TwiML::Response.new do |r|
+        r.Say("Lucy is not Ready.  You are going to be placed on hold")
+        r.Enqueue("MyQueue")
+        #r.Redirect('/wait')
+   end  
+   return response.text
+end
+
+### ACD stuff - for tracking agent state
+get '/track' do
+    activeusers = 0
+    from = params[:from]
+    status = params[:status]
+    
+    currentclientcount = userlist[from][2] || 0
+
+    userlist[from] = [status, Time.now.to_f, currentclientcount ]
+                  
+    
+    activeusers = 0 
+    userlist.each do |key, value|
+      puts "#{key} = #{value}"
+      activeusers += 1 if value.first == "Ready"
+    end
+    
+    usercount = userlist.length  
+
+    p "Number of users #{usercount}, number of readyusers = #{activeusers}"
+    #return [userlist]
+end
+
+get '/status' do
+    #returns status for a particular client
+    from = params[:from]
+    p "from #{from}"
+    #grab the first element in the status array for this user ie, [\"Ready\", 1376194403.9692101]"
+    status = userlist[from].first  
+    p "status = #{status}"
+    return status
+end
+
+get '/longestidle' do
+    #gets all "Ready" agents, sorts by longest idle 
+
+   readyusers = userlist.keep_if {|key, value|
+        value[0] == "Ready"
+    }
+
+    if readyusers.count < 1 
+      return "NoReadyAgents" 
+      break
+    end
+
+    sorted = readyusers.sort_by { |x|
+          x[1]
+          #sorts by idle time, {"sam" => ["Ready", 124444]}
+    }
+
+    longestidleagent = sorted.first[0]   #first element of first array is name of user
+    return longestidleagent 
+
+end
+
+
+
+def getlongestidle (userlist) 
+      #gets all "Ready" agents, sorts by longest idle 
+
+   readyusers = userlist.keep_if {|key, value|
+        value[0] == "Ready"
+    }
+
+    if readyusers.count < 1 
+      return "NoReadyAgents" 
+    end
+
+    sorted = readyusers.sort_by { |x|
+          x[1]
+          #sorts by idle time, {"sam" => ["Ready", 124444]}
+    }
+
+    longestidleagent = sorted.first[0]   #first element of first array is name of user
+    return longestidleagent 
+
+end
+
+
+## queue stuff
+post '/wait' do
+   response = Twilio::TwiML::Response.new do |r|
+        r.Say("You are currently on hold")
+        r.Redirect('/wait')        
+   end  
+   response.text
+end
+
+post '/agent' do
+   queue = params[:queue]
+   if queue.nil?
+     queue = default_queue
+   end
+   response = Twilio::TwiML::Response.new do |r|
+          r.Dial do |d|
+            d.Queue(queue)
+          end
+   end
+   return response.text
+end  
+
+
+
