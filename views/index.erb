@@ -37,7 +37,7 @@
 
     });
 
-
+    
        var wsaddress = 'ws://' + window.location.host  + "?clientname=<%= client_name %>"
        //var wsaddress = "ws://macbook.ngrok.com?clientname=<%= client_name %>"
        var ws = new WebSocket(wsaddress);
@@ -49,8 +49,9 @@
         ws.onopen    = function()  { console.log('websocket opened'); };
         ws.onclose   = function()  { console.log('websocket closed'); }
         ws.onmessage = function(m) { conole.log('websocket message: ' +  m.data); };
-
+      
     
+
     /******** TWILIO STUFF ***********************/
     /* Create the Client with a Capability Token */
     Twilio.Device.setup("<%= token %>", {debug: true});

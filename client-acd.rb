@@ -58,6 +58,7 @@ Thread.new do
      $sum += 1
 
      #print out users
+     puts "printing user list.."
      userlist.each do |key, value|
       puts "#{key} = #{value}"
       activeusers += 1 if value.first == "Ready"
@@ -104,12 +105,13 @@ Thread.abort_on_exception = true
 
 get '/' do
   #for hmtl client
-  if !request.websocket? 
-    client_name = params[:client]
-      if client_name.nil?
+  client_name = params[:client]
+  if client_name.nil?
         client_name = default_client
-      end
-      
+  end
+
+  if !request.websocket? 
+     
       capability = Twilio::Util::Capability.new account_sid, auth_token
       # Create an application sid at twilio.com/user/account/apps and use it here
       capability.allow_client_outgoing app_id 
@@ -151,6 +153,12 @@ get '/' do
         newclientcount = currentclientcount - 1
         userlist[clientname][2] = newclientcount
 
+        #if not more clients are registered, set to not ready
+        if newclientcount < 1
+           userlist[clientname][0] = "LOGGEDOUT"
+           userlist[clientname][1] = Time.now 
+        end
+
 
         #remove client count
 
@@ -188,7 +196,7 @@ post '/voice' do
             r.Enqueue(dialqueue)
             #r.Redirect('/wait')
         else      #send to best agent   
-            r.Dial(:timeout=>"18", :action=>"/handleDialCallStatus")  do |d|
+            r.Dial(:timeout=>"10", :action=>"/handleDialCallStatus")  do |d|
                 puts "dialing client #{client_name}"
                 d.Client client_name
                 
@@ -264,11 +272,20 @@ get '/track' do
     activeusers = 0
     from = params[:from]
     status = params[:status]
-    
-    currentclientcount = userlist[from][2] || 0
+    currentclientcount = 0
+
+
+
+    #check if this guy is already registered as a client from another webpage
+    if userlist.has_key?(from)
+      currentclientcount = userlist[from][2] 
+    end 
+
+    #update the userlist{} status.. this is now his status
+    puts "For client #{from} retrieved currentclientcount = #{currentclientcount} and setting status to #{status}"
 
     userlist[from] = [status, Time.now.to_f, currentclientcount ]
-                  
+
     
     activeusers = 0 
     userlist.each do |key, value|
@@ -278,8 +295,8 @@ get '/track' do
     
     usercount = userlist.length  
 
-    p "Number of users #{usercount}, number of readyusers = #{activeusers}"
-    #return [userlist]
+    p "Number of users #{usercount}, number of readyusers = #{activeusers}, currentclientcount = #{currentclientcount}"
+  
 end
 
 get '/status' do
@@ -287,8 +304,13 @@ get '/status' do
     from = params[:from]
     p "from #{from}"
     #grab the first element in the status array for this user ie, [\"Ready\", 1376194403.9692101]"
-    status = userlist[from].first  
-    p "status = #{status}"
+
+    if userlist.has_key?(from)
+      status = userlist[from].first  
+      p "status = #{status}"
+    else
+      status ="no status"
+    end
     return status
 end
 
@@ -319,7 +341,9 @@ end
 def getlongestidle (userlist) 
       #gets all "Ready" agents, sorts by longest idle 
 
-   readyusers = userlist.keep_if {|key, value|
+   readyusers = userlist.clone  #don't 
+
+   readyusers.keep_if {|key, value|
         value[0] == "Ready"
     }
 
