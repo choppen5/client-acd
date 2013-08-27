@@ -23,7 +23,7 @@
     var callStartTime = null;
     var calledType = null;    
     var callNumber = null
-    var answeredCallOffered = null; //tracks if the agent answered a call offered to them
+    var answeredCallOffered = null; 
 
 
     $(function() {
@@ -38,7 +38,7 @@
     });
 
     
-       var wsaddress = 'ws://' + window.location.host  + "?clientname=<%= client_name %>"
+       var wsaddress = 'wss://' + window.location.host  + "?clientname=<%= client_name %>"
        //var wsaddress = "ws://macbook.ngrok.com?clientname=<%= client_name %>"
        var ws = new WebSocket(wsaddress);
        //alert(wsaddress);

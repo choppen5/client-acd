@@ -7,12 +7,18 @@ require 'sinatra'
 require 'sinatra-websocket'
 require 'pp'
 
+
+
+
+config_file 'config_file.yml'
+
+
 set :server, 'thin'
 set :sockets, []
  
 disable :protection
 
-config_file 'config_file.yml'
+
 
 ############ CONFIG ###########################
 # Find these values at twilio.com/user/account
@@ -44,8 +50,10 @@ queue1 = @account.queues.get(queue_id)
 
 
 #puts "queue wait time: #{queue.average_wait_time}"
+userlist = Hash.new  #all users, in memory
+calls = Hash.new # tracked calls, in memory
 
-userlist = Hash.new
+
 activeusers = 0
 
 $sum = 0
@@ -172,7 +180,8 @@ end
 #for incoming voice calls.. not for client to client routing (move that elsewhere)
 post '/voice' do
     number = params[:PhoneNumber]
-
+    sid = params[:CallSid]
+    puts "sid = #{sid}"
 
     bestclient = getlongestidle(userlist)
       if bestclient == "NoReadyAgents"  
@@ -198,6 +207,7 @@ post '/voice' do
         else      #send to best agent   
             r.Dial(:timeout=>"10", :action=>"/handleDialCallStatus")  do |d|
                 puts "dialing client #{client_name}"
+                calls[sid] = { agent: client_name, status: "Ringing"} 
                 d.Client client_name
                 
             end
@@ -212,12 +222,23 @@ post '/handleDialCallStatus' do
 
   puts "HANDLEDIALCALLSTATUS params = #{params}"
   #todo - log this info?
-
+  #rules - if you dialed a client, and the response is "no-answer", set client to not ready.
+    # 
+  sid = params[:CallSid]
 
   response = Twilio::TwiML::Response.new do |r| 
 
       #consider logging all of this?
       if params['DialCallStatus'] == "no-answer"
+        #if a call got here when ringing a client, they didn't answer.  set values
+        calls[sid][:status] = "Missed"
+        agent = calls[sid][:agent]
+
+        puts calls # {"CAcb90adcb68b6e51b96d8216d105ff645"=>{:client=>"defaultclient", :status=>"Ringing", "status"=>"Missed"}}
+        # now, since this client missed a call, set him to paused, and send a websocket message?
+        userlist[agent][0] = "Missed"
+        puts "user list = #{userlist}"
+
         r.Redirect('/voice')
       else
         r.Hangup
