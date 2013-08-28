@@ -74,8 +74,10 @@ Thread.new do
 
      topmember = 0
      callerinqueue = false
+     qsize = 0
      @members = queue1.members
      @members.list.each do |m|
+        qsize +=1
         puts "Sid: #{m.call_sid}"
         puts "Date Enqueue: #{m.date_enqueued}"
         puts "Wait_Time: #{m.wait_time} "
@@ -86,9 +88,20 @@ Thread.new do
         end
 
     end 
- 
+  
 
 
+
+    puts "qsize = #{qsize}"
+
+    #get ready users (need an object!)
+    readyusers = userlist.clone  
+    readyusers.keep_if {|key, value|
+            value[0] == "Ready"
+        }
+
+    readycount = readyusers.count.to_i.to_s  || 0
+    
 
       if callerinqueue #only check for route if there is a queue member
         bestclient = getlongestidle(userlist)
@@ -101,6 +114,17 @@ Thread.new do
           #get clients phone number, if any
         end 
       end 
+
+      
+
+      settings.sockets.each{|s| 
+        #msg = '{"queuesize": ' +  qsize  + ', "readyagents": '  +  readycount + '}'
+        msg =  { :queuesize => qsize, :readyagents => readycount}.to_json
+        #msg.to_json
+        puts "sending #{msg}"
+        s.send(msg) 
+      } 
+        
 
      #puts "average queue wait time: #{queue1.average_wait_time}"
      #puts "queue depth = #{queue.depth}"
@@ -166,7 +190,6 @@ get '/' do
            userlist[clientname][0] = "LOGGEDOUT"
            userlist[clientname][1] = Time.now 
         end
-
 
         #remove client count
 

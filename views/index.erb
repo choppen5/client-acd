@@ -48,7 +48,29 @@
 
         ws.onopen    = function()  { console.log('websocket opened'); };
         ws.onclose   = function()  { console.log('websocket closed'); }
-        ws.onmessage = function(m) { conole.log('websocket message: ' +  m.data); };
+        ws.onmessage = function(m) { 
+            console.log('websocket message: ' +  m.data);
+            
+            
+            var result = JSON.parse(m.data);
+            //alert(result.inspect)
+
+
+            $("#callsqueued").text("Call Queue:  " + result.queuesize);
+            $("#readyagents").text("Ready Agents:  " + result.readyagents); 
+
+            if (result.queuesize > 4) {
+                $("#callsqueued").css("background", "red");
+            } else if 
+               (result.queuesize > 0 &&  result.queuesize < 5) {
+                $("#callsqueued").css("background", "yellow");
+            } else {
+                $("#callsqueued").css("background-color", "#ececec");
+            }
+            
+
+
+        };
       
     
 
@@ -91,9 +113,15 @@
     });
  
     Twilio.Device.connect(function (conn) {
-		    $("#log").text("OnCall with " + conn.parameters.From);
+
+        var callnum = conn.parameters.From || conn.parameters.To;
+
+		    $("#log").text("OnCall with " + callnum );
         $("#log").css("background","blue");
-        $("#answercall").css("background-color", "#ececec" )
+        $("#answercall").css("background-color", "#ececec" );
+          $.get("/track", { "from":"<%= client_name %>", "status":"OnCall" }, function(data) {
+              //send status info
+          });
     });
 
     /* Listen for incoming connections */
@@ -114,6 +142,8 @@
             }
           //now answer the call  
           conn.accept();
+
+
       });
 
     }); 
@@ -323,6 +353,13 @@
     <button class="hangup" onclick="hangup();">
       Hangup
     </button>
+
+
+    <div class="status-info" id="readyagents"></div>
+    <div class="status-info" id="callsqueued"></div>
+    
+
+
 
     <div class="logo">
         <a href="http://www.twilio.com/" style="text: decoration: none; display: inline-block; width: 166px; height: 0; overflow: hidden; padding-top: 31px; background: url(http://www.twilio.com/packages/company/img/logos_icon_poweredbysmall.png) no-repeat;  position: fixed; bottom: 5px; margin-right: auto; margin-left: 15px;">powered by twilio™</a>
