@@ -506,7 +506,7 @@ post '/connect-mobile-call-to-agent' do
   response = Twilio::TwiML::Response.new do |r|
 
     # call screen
-    r.Gather(:action => "/voice?requesting_party=#{requesting_party}&queue_name=#{queue_name}&requestor_name=#{requestor_name}&message=#{message}", :timeout => "10", :numDigits => "1") do |g|
+    r.Gather(:action => URI.escape("/voice?requesting_party=#{requesting_party}&queue_name=#{queue_name}&requestor_name=#{requestor_name}&message=#{message}"), :timeout => "10", :numDigits => "1") do |g|
       g.Say("Press any key to speak to an agent now.")
     end
 
