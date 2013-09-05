@@ -480,7 +480,7 @@ post '/mobile-call-request' do
   message = params[:message]
 
  
-#url = request.base_url
+url = request.base_url
 unless request.base_url.include? 'localhost'
    url = url.sub('http', 'https') 
 end
