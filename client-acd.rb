@@ -471,7 +471,7 @@ get '/calldata' do
 end 
 
 ## requests from mobile application to initiate PSTN callback
-post '/mobile-call-request' do
+get '/mobile-call-request' do
 
   # todo change parameter names on mobile device to match
   requesting_party = params[:phone_number]
@@ -479,10 +479,13 @@ post '/mobile-call-request' do
   requestor_name = params[:name]
   message = params[:message]
 
+ 
+url = request.base_url.tr('http', 'https ')
+puts "mobile call request url = #{url}"
 
   @client = Twilio::REST::Client.new(account_sid, auth_token)
   # outbound PSTN call to requesting party. They will be call screened before being connected.
-  @client.account.calls.create(:from => caller_id, :to => requesting_party, :url => "#{request.base_url}/connect-mobile-call-to-agent?queue_name=#{queue_name}&requestor_name=#{requestor_name}&message=#{message}")
+  @client.account.calls.create(:from => caller_id, :to => requesting_party, :url => "#{url}/connect-mobile-call-to-agent?queue_name=#{queue_name}&requestor_name=#{requestor_name}&message=#{message}")
   
 
   return ""
