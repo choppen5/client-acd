@@ -204,7 +204,18 @@ end
 post '/voice' do
     number = params[:PhoneNumber]
     sid = params[:CallSid]
-    puts "sid = #{sid}"
+    queue_name = params[:queue_name]
+    requestor_name = params[:requestor_name]
+    message = params[:message]
+
+    
+    if calls[sid] 
+       puts "found sid #{sid} = #{calls[sid]}"
+    else
+       puts "creating sid #{sid}"
+       calls[sid] = {}
+    end 
+   
 
     bestclient = getlongestidle(userlist)
       if bestclient == "NoReadyAgents"  
@@ -230,7 +241,12 @@ post '/voice' do
         else      #send to best agent   
             r.Dial(:timeout=>"10", :action=>"/handleDialCallStatus")  do |d|
                 puts "dialing client #{client_name}"
-                calls[sid] = { agent: client_name, status: "Ringing"} 
+                calls[sid][:agent] = client_name
+                calls[sid][:status] = "Ringing" 
+                calls[sid][:queue_name] = queue_name
+                calls[sid][:requestor_name] = requestor_name
+                calls[sid][:message] = message
+
                 d.Client client_name
                 
             end
@@ -428,5 +444,73 @@ post '/agent' do
    return response.text
 end  
 
+get '/calldata' do 
+    #sid will be a client call, need to get parent for attached data
+    sid = params[:CallSid]
+  
+    @client = Twilio::REST::Client.new(account_sid, auth_token)
+    @call = @client.account.calls.get(sid)
+
+
+    parentsid = @call.parent_call_sid
+    puts "parent sid for #{sid} = #{parentsid}" 
+
+    calldata = calls[@call.parent_call_sid]
+
+    #puts "calls sid = #{calls[sid]}"
+    
+
+    if calls[parentsid]
+      msg =  { :agentname => calldata[:agent], :agentstatus => calldata[:status], :queue_name => calldata[:queue_name], :requestor_name => calldata[:requestor_name], :message => calldata[:message]}.to_json
+    else
+      msg = "NoSID"
+    end
+
+    return msg 
+
+end 
+
+## requests from mobile application to initiate PSTN callback
+get '/mobile-call-request' do
+
+  # todo change parameter names on mobile device to match
+  requesting_party = params[:phone_number]
+  queue_name = params[:queue]
+  requestor_name = params[:name]
+  message = params[:message]
+
+
+  @client = Twilio::REST::Client.new(account_sid, auth_token)
+  # outbound PSTN call to requesting party. They will be call screened before being connected.
+  @client.account.calls.create(:from => caller_id, :to => requesting_party, :url => "#{request.base_url}/connect-mobile-call-to-agent?queue_name=#{queue_name}&requestor_name=#{requestor_name}&message=#{message}")
+  
+
+  return ""
+
+end
+
+
+post '/connect-mobile-call-to-agent' do
+
+  requesting_party = params[:requesting_party]
+  queue_name = params[:queue_name]
+  requestor_name = params[:requestor_name]
+  message = params[:message]
+
+  response = Twilio::TwiML::Response.new do |r|
+
+    # call screen
+    r.Gather(:action => "/voice?requesting_party=#{requesting_party}&queue_name=#{queue_name}&requestor_name=#{requestor_name}&message=#{message}", :timeout => "10", :numDigits => "1") do |g|
+      g.Say("Press any key to speak to an agent now.")
+    end
+
+    # no key was pressed
+    r.hangup
+
+    return r.text
+
+  end
+
+end
 
 

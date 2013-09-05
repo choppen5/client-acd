@@ -72,6 +72,15 @@ button.status {
     *display: inline;
 }
 
+.status-area {
+    position: fixed;
+    bottom: 40px;
+}
+
+.calldata {
+  margin-left: 15px;
+}
+
 .status-info {
 
     position: relative;
@@ -79,13 +88,13 @@ button.status {
     color: #3B3B3B;
     //color: #ececec;
     cursor: pointer;
-    height: 26px;
-    font-size: 1em;
+    height: 16px;
+    font-size: 12px;
     //margin: 0 auto;
     
     text-decoration: none;
     text-shadow: 1px 1px 0 #fff;
-    //font:12px/normal sans-serif;
+    
     font-weight: bold;
 
     text-align: center;
@@ -96,16 +105,8 @@ button.status {
     padding-top: 10px;
     width: 170px;
 
-    /* Gradient */
 
-
-    /*
-    background-image: linear-gradient(bottom, rgb(139,204,106) 42%, rgb(143,194,114) 71%);
-    background-image: -o-linear-gradient(bottom, rgb(139,204,106) 42%, rgb(143,194,114) 71%);
-    background-image: -moz-linear-gradient(bottom, rgb(139,204,106) 42%, rgb(143,194,114) 71%);
-    background-image: -webkit-linear-gradient(bottom, rgb(139,204,106) 42%, rgb(143,194,114) 71%);
-    background-image: -ms-linear-gradient(bottom, rgb(139,204,106) 42%, rgb(143,194,114) 71%);
-    */
+    
 
     
     background-color: #ececec;
@@ -114,14 +115,6 @@ button.status {
     background-image: -o-linear-gradient(#f4f4f4, #ececec);
     background-image: linear-gradient(#f4f4f4, #ececec);
 
-    /*
-    background-image: -webkit-gradient(
-      linear,
-      left bottom,
-      left top,
-      color-stop(0.42, rgb(139,204,106)),
-      color-stop(0.71, rgb(143,194,114))
-    );
 
     /* Rounded corner */
     -webkit-border-radius: 4px;

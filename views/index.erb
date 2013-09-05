@@ -103,6 +103,7 @@
    /* Log a message when a call disconnects. */
     Twilio.Device.disconnect(function (conn) {
         $("#log").text("Call ended");
+        $(".calldata").text("");
 
         sforce.interaction.getPageInfo(saveLog);
         callNumber = null;
@@ -134,6 +135,22 @@
 
       var inboundnum = cleanInboundTwilioNumber(conn.parameters.From);
       sforce.interaction.searchAndScreenPop(inboundnum, '','inbound');
+      var sid = conn.parameters.CallSid
+
+      $.get("/calldata", { "CallSid":sid}, function(data) {
+
+          var result = JSON.parse(data);
+          //console.log("got data! = " + data);
+
+          if (result.requestor_name) {
+              $(".calldata").text("Call Data:");
+              $(".calldata").append("<li>"+ result.queue_name + "</li>");
+              $(".calldata").append("<li>"+ result.requestor_name  + "</li>");
+              $(".calldata").append("<li>"+ result.message  + "</li>");
+              
+          }    
+      }); 
+
 
       $("#answercall").click( 
         function () {
@@ -142,7 +159,6 @@
             }
           //now answer the call  
           conn.accept();
-
 
       });
 
@@ -224,6 +240,7 @@
        if (answeredCallOffered == "Ringing") {
           //agent never answered a Ringing call, set to not ready
           notready();
+          $(".calldata").text("");
           answeredCallOffered = "Missed";
 
        }
@@ -353,13 +370,15 @@
     <button class="hangup" onclick="hangup();">
       Hangup
     </button>
-
-
-    <div class="status-info" id="readyagents"></div>
-    <div class="status-info" id="callsqueued"></div>
     
+    <div class="calldata"></div>
 
+    <div class="status-area">
+      <div class="status-info" id="readyagents"></div>
+      <div class="status-info" id="callsqueued"></div>
+    </div>  
 
+  
 
     <div class="logo">
         <a href="http://www.twilio.com/" style="text: decoration: none; display: inline-block; width: 166px; height: 0; overflow: hidden; padding-top: 31px; background: url(http://www.twilio.com/packages/company/img/logos_icon_poweredbysmall.png) no-repeat;  position: fixed; bottom: 5px; margin-right: auto; margin-left: 15px;">powered by twilio™</a>
