@@ -471,7 +471,7 @@ get '/calldata' do
 end 
 
 ## requests from mobile application to initiate PSTN callback
-get '/mobile-call-request' do
+post '/mobile-call-request' do
 
   # todo change parameter names on mobile device to match
   requesting_party = params[:phone_number]
