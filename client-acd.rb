@@ -488,7 +488,7 @@ puts "mobile call request url = #{url}"
 
   @client = Twilio::REST::Client.new(account_sid, auth_token)
   # outbound PSTN call to requesting party. They will be call screened before being connected.
-  @client.account.calls.create(:from => caller_id, :to => requesting_party, :url => "#{url}/connect-mobile-call-to-agent?queue_name=#{queue_name}&requestor_name=#{requestor_name}&message=#{message}")
+  @client.account.calls.create(:from => caller_id, :to => requesting_party, :url => URI.escape("#{url}/connect-mobile-call-to-agent?queue_name=#{queue_name}&requestor_name=#{requestor_name}&message=#{message}"))
   
 
   return ""
