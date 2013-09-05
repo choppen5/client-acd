@@ -482,7 +482,7 @@ post '/mobile-call-request' do
  
 #url = request.base_url
 unless request.base_url.include? 'localhost'
-   url.sub('http', 'https') 
+   url = url.sub('http', 'https') 
 end
 puts "mobile call request url = #{url}"
 
