@@ -480,7 +480,10 @@ post '/mobile-call-request' do
   message = params[:message]
 
  
-url = request.base_url.tr('http', 'https ')
+#url = request.base_url
+unless request.base_url.include? 'localhost'
+   url.sub('http', 'https') 
+end
 puts "mobile call request url = #{url}"
 
   @client = Twilio::REST::Client.new(account_sid, auth_token)
