@@ -137,10 +137,11 @@
       sforce.interaction.searchAndScreenPop(inboundnum, '','inbound');
       var sid = conn.parameters.CallSid
 
+
       $.get("/calldata", { "CallSid":sid}, function(data) {
 
           var result = JSON.parse(data);
-          //console.log("got data! = " + data);
+          //alert("getting data from..." + sid)
 
           if (result.requestor_name) {
               $(".calldata").text("Call Data:");

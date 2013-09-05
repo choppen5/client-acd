@@ -220,12 +220,15 @@ post '/voice' do
     end
 
 
-    
+    #capture call data
     if calls[sid] 
        puts "found sid #{sid} = #{calls[sid]}"
     else
        puts "creating sid #{sid}"
        calls[sid] = {}
+       calls[sid][:queue_name] = queue_name
+       calls[sid][:requestor_name] = requestor_name
+       calls[sid][:message] = message
     end 
    
 
@@ -255,10 +258,6 @@ post '/voice' do
                 puts "dialing client #{client_name}"
                 calls[sid][:agent] = client_name
                 calls[sid][:status] = "Ringing" 
-                calls[sid][:queue_name] = queue_name
-                calls[sid][:requestor_name] = requestor_name
-                calls[sid][:message] = message
-
                 d.Client client_name
                 
             end
