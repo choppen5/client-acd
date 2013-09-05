@@ -202,11 +202,23 @@ end
 
 #for incoming voice calls.. not for client to client routing (move that elsewhere)
 post '/voice' do
+
+    puts "params  = #{params}"
+
     number = params[:PhoneNumber]
     sid = params[:CallSid]
     queue_name = params[:queue_name]
     requestor_name = params[:requestor_name]
     message = params[:message]
+    callerid = params[:requesting_party]
+    from = params[:From]
+
+
+    #if special parameter requesting_party is passed, make it the caller id
+    if callerid.nil? 
+      callerid = from
+    end
+
 
     
     if calls[sid] 
@@ -239,7 +251,7 @@ post '/voice' do
             r.Enqueue(dialqueue)
             #r.Redirect('/wait')
         else      #send to best agent   
-            r.Dial(:timeout=>"10", :action=>"/handleDialCallStatus")  do |d|
+            r.Dial(:timeout=>"10", :action=>"/handleDialCallStatus", :callerId => callerid)  do |d|
                 puts "dialing client #{client_name}"
                 calls[sid][:agent] = client_name
                 calls[sid][:status] = "Ringing" 
@@ -488,7 +500,7 @@ puts "mobile call request url = #{url}"
 
   @client = Twilio::REST::Client.new(account_sid, auth_token)
   # outbound PSTN call to requesting party. They will be call screened before being connected.
-  @client.account.calls.create(:from => caller_id, :to => requesting_party, :url => URI.escape("#{url}/connect-mobile-call-to-agent?queue_name=#{queue_name}&requestor_name=#{requestor_name}&message=#{message}"))
+  @client.account.calls.create(:from => caller_id, :to => requesting_party, :url => URI.escape("#{url}/connect-mobile-call-to-agent?queue_name=#{queue_name}&requestor_name=#{requestor_name}&requesting_party=#{requesting_party}&message=#{message}"))
   
 
   return ""
@@ -502,11 +514,12 @@ post '/connect-mobile-call-to-agent' do
   queue_name = params[:queue_name]
   requestor_name = params[:requestor_name]
   message = params[:message]
+  callerid = params[:to]
 
   response = Twilio::TwiML::Response.new do |r|
 
     # call screen
-    r.Gather(:action => URI.escape("/voice?requesting_party=#{requesting_party}&queue_name=#{queue_name}&requestor_name=#{requestor_name}&message=#{message}"), :timeout => "10", :numDigits => "1") do |g|
+    r.Gather(:action => URI.escape("/voice?requesting_party=#{requesting_party}&queue_name=#{queue_name}&requestor_name=#{requestor_name}&message=#{message}&requesting_party=#{requesting_party}"), :timeout => "10", :numDigits => "1") do |g|
       g.Say("Press any key to speak to an agent now.")
     end
 
