@@ -155,7 +155,7 @@
       var name = result.requestor_name || "";
       var message = result.message || "";
 
-      sforce.interaction.searchAndScreenPop(inboundnum, 'cas14=Call%20From%20' + conn.parameters.From + '%20' + name + '%20' + message ,'inbound');
+      sforce.interaction.searchAndScreenPop(inboundnum, 'con10=' + conn.parameters.From + '&name_firstcon2=' + name ,'inbound');
 
 
 
