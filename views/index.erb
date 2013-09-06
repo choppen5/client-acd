@@ -134,13 +134,14 @@
       $("#answercall").css("background","yellow");
 
       var inboundnum = cleanInboundTwilioNumber(conn.parameters.From);
-      sforce.interaction.searchAndScreenPop(inboundnum, '','inbound');
+      
       var sid = conn.parameters.CallSid
 
+      var result = "";
 
       $.get("/calldata", { "CallSid":sid}, function(data) {
 
-          var result = JSON.parse(data);
+          result = JSON.parse(data);
           //alert("getting data from..." + sid)
 
           if (result.requestor_name) {
@@ -151,6 +152,12 @@
               
           }    
       }); 
+      var name = result.requestor_name || "";
+      var message = result.message || "";
+
+      sforce.interaction.searchAndScreenPop(inboundnum, 'cas14=Call%20From%20' + conn.parameters.From + '%20' + name + '%20' + message ,'inbound');
+
+
 
 
       $("#answercall").click( 
