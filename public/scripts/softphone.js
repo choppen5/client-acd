@@ -149,8 +149,9 @@ $(function() {
         //only set oncall info when there are params
         if (conn.parameters.From) {
           callNum = conn.parameters.From;
-          alert("connect.parameters.From = " + callNum); 
           SP.functions.updateAgentStatusText("onCall", "Talking to " + callNum);
+        } else {
+          SP.functions.updateAgentStatusText("onCall", "Outbound Call");
         }
 
         
@@ -264,15 +265,14 @@ $(function() {
         }
 
 
-    function startCall(response) { 
+    function (response) { 
             
             //called onClick2dial
             var result = JSON.parse(response.result);  
             var cleanednumber = cleanFormatting(result.number);
 
-            alert("startCall Talking to " + cleanednumber); 
-            SP.functions.updateAgentStatusText("onCall", "Talking to " + cleanednumber);
-             
+            
+            
             params = {"PhoneNumber": cleanednumber};
             Twilio.Device.connect(params);
             
