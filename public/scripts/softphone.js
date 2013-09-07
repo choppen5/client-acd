@@ -198,7 +198,6 @@ $(function() {
         console.log(conn.parameters.From); // who canceled the call
         SP.functions.detachAnswerButton();
         SP.functions.hideCallData();
-        SP.functions.updateStatus();
         SP.functions.notReady();
     });
 
