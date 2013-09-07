@@ -113,7 +113,7 @@ $(function() {
 
     Twilio.Device.offline(function (device) {
       sforce.interaction.cti.disableClickToDial(); 
-      SP.notReady();
+      SP.functions.notReady();
       SP.functions.hideCallData();
     });
 
