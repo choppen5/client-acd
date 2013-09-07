@@ -149,7 +149,7 @@ $(function() {
         //only set oncall info when there are params
         if (conn.parameters.From) {
           callNum = conn.parameters.From;
-          alert("connect.parameters.From = " + callNum; 
+          alert("connect.parameters.From = " + callNum); 
           SP.functions.updateAgentStatusText("onCall", "Talking to " + callNum);
         }
 
