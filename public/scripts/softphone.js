@@ -143,18 +143,19 @@ $(function() {
     Twilio.Device.connect(function (conn) {
 
         console.dir(conn);
-        console.log(conn.parameters)
-        var callNum = null;
+        var  status = "";
 
-        //only set oncall info when there are params
+        var callNum = null;
         if (conn.parameters.From) {
-          callNum = conn.parameters.From;
-          SP.functions.updateAgentStatusText("onCall", "Talking to " + callNum);
+          callNum = conn.parameters.To;
+          status = "Call From: " + callNum;
         } else {
-          SP.functions.updateAgentStatusText("onCall", "Outbound Call");
+          status = "Outbound call";
+
         }
 
-        
+
+        SP.functions.updateAgentStatusText("onCall", status);
         SP.functions.detachAnswerButton();
 
         //send status info
@@ -265,17 +266,16 @@ $(function() {
         }
 
 
-    function (response) { 
+    function startCall(response) { 
             
             //called onClick2dial
             var result = JSON.parse(response.result);  
             var cleanednumber = cleanFormatting(result.number);
 
-            
-            
+
+            //alert("cleanednumber = " + cleanednumber);  
             params = {"PhoneNumber": cleanednumber};
             Twilio.Device.connect(params);
-            
 
     }
 
