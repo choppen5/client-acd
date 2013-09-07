@@ -147,7 +147,7 @@ $(function() {
 
         var callNum = null;
         if (conn.parameters.From) {
-          callNum = conn.parameters.To;
+          callNum = conn.parameters.From;
           status = "Call From: " + callNum;
         } else {
           status = "Outbound call";
