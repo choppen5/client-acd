@@ -217,8 +217,8 @@ post '/voice' do
     #if special parameter requesting_party is passed, make it the caller id
     if params[:requesting_party]
       callerid = params[:requesting_party]
-    elsif params[:Direction] == "inbound"
-      callerid = params[:From]
+    elsif params[:Direction] == "outbound-api"
+      callerid = params[:T0]
     end
 
 
