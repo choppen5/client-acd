@@ -145,13 +145,14 @@ $(function() {
         console.dir(conn);
         console.log(conn.parameters)
         var callNum = null;
-        if (conn.parameters.From == "undefined") {
-          callNum = conn.parameters.To;
-        } else {
+
+        //only set oncall info when there are params
+        if (conn.parameters.From) {
           callNum = conn.parameters.From;
+          SP.functions.updateAgentStatusText("onCall", "Talking to " + callNum);
         }
 
-        SP.functions.updateAgentStatusText("onCall", "Talking to " + callNum);
+        
         SP.functions.detachAnswerButton();
 
         //send status info
