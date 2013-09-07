@@ -143,6 +143,7 @@ $(function() {
     Twilio.Device.connect(function (conn) {
 
         console.dir(conn);
+        console.log(conn.parameters)
         var callNum = null;
         if (conn.parameters.From == "undefined") {
           callNum = conn.parameters.To;
@@ -153,8 +154,9 @@ $(function() {
         SP.functions.updateAgentStatusText("onCall", "Talking to " + callNum);
         SP.functions.detachAnswerButton();
 
+        //send status info
         $.get("/track", { "from":"default_client", "status":"OnCall" }, function(data) {
-            //send status info
+            
         });
 
     });
@@ -270,6 +272,8 @@ $(function() {
             //alert("cleanednumber = " + cleanednumber);  
             params = {"PhoneNumber": cleanednumber};
             Twilio.Device.connect(params);
+            SP.functions.updateAgentStatusText("onCall", "Talking to " + cleanednumber);
+
     }
 
     function saveLog(response) {
