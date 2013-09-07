@@ -269,11 +269,11 @@ $(function() {
             var result = JSON.parse(response.result);  
             var cleanednumber = cleanFormatting(result.number);
 
-            
+            SP.functions.updateAgentStatusText("onCall", "Talking to " + cleanednumber);
             //alert("cleanednumber = " + cleanednumber);  
             params = {"PhoneNumber": cleanednumber};
             Twilio.Device.connect(params);
-            SP.functions.updateAgentStatusText("onCall", "Talking to " + cleanednumber);
+            
 
     }
 
