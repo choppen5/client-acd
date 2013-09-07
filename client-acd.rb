@@ -218,7 +218,7 @@ post '/voice' do
     if params[:requesting_party]
       callerid = params[:requesting_party]
     elsif params[:Direction] == "outbound-api"
-      callerid = params[:T0]
+      callerid = params[:To]
     end
 
 
