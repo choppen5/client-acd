@@ -210,14 +210,15 @@ post '/voice' do
     queue_name = params[:queue_name]
     requestor_name = params[:requestor_name]
     message = params[:message]
-    callerid = params[:requesting_party]
-    from = params[:From]
 
 
     #if special parameter requesting_party is passed, make it the caller id
-    if callerid.nil? 
-      callerid = from
+    if params[:requesting_party]
+      callerid = params[:requesting_party]
+    else 
+      callerid = params[:From]
     end
+
 
 
     #capture call data
