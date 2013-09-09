@@ -146,7 +146,7 @@ div#call-data ul {
 div#team-status div {
   padding: 5px 0px 4px 8px;
   height: 15px;
-  background-color: ##0d8fbb; /* #2980B9; */
+  background-color: #0d8fbb;  /*#2980B9; */
   color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
   letter-spacing: 2px;
@@ -156,5 +156,5 @@ div#team-status div {
 
 img {
   float: right;
-  width: 10 0px;
+  width: 100px;
 }
