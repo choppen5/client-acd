@@ -112,6 +112,7 @@ $(function() {
     });
 
     Twilio.Device.offline(function (device) {
+      //make a new status call.. something like.. disconnected instead of notReady ?
       sforce.interaction.cti.disableClickToDial(); 
       SP.functions.notReady();
       SP.functions.hideCallData();
