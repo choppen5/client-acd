@@ -41,11 +41,11 @@ div#agent-status {
 }
 
 div#agent-status.ready {
-  background-color: #2ecc71;
+  background-color:  #67C11A; /*#2ecc71; */ 
 }
 
 div#agent-status.not-ready {
-  background-color: #e74c3c;
+  background-color: #FE2B2C; /*e74c3c;*/
 }
 
 div#agent-status.on-call {
@@ -146,7 +146,7 @@ div#call-data ul {
 div#team-status div {
   padding: 5px 0px 4px 8px;
   height: 15px;
-  background-color: #2980B9;
+  background-color: ##0d8fbb; /* #2980B9; */
   color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
   letter-spacing: 2px;
@@ -156,5 +156,5 @@ div#team-status div {
 
 img {
   float: right;
-  width: 100px;
+  width: 10 0px;
 }
