@@ -195,10 +195,10 @@ $(function() {
       }); 
 
 
-      var cleanednumber = cleanFormatting(conn.parameters.From);
+      
       var name = result.requestor_name || "";
       var message = result.message || "";
-      sforce.interaction.searchAndScreenPop(inboundnum, 'con10=' + conn.parameters.From + '&name_firstcon2=' + name ,'inbound');
+      sforce.interaction.searchAndScreenPop(inboundnum, 'con10=' + inboundnum + '&name_firstcon2=' + name ,'inbound');
 
     });
 

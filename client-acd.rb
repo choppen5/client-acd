@@ -210,14 +210,14 @@ post '/voice' do
     queue_name = params[:queue_name]
     requestor_name = params[:requestor_name]
     message = params[:message]
-    callerid = params[:Caller]
+    
  
 
-
+    callerid = params[:Caller]
     #if special parameter requesting_party is passed, make it the caller id
     if params[:requesting_party]
       callerid = params[:requesting_party]
-    elsif params[:Direction] == "outbound-api"
+    elsif params[:Direction] == "outbound-api" #special case when call queued from a outbound leg
       callerid = params[:To]
     end
 
