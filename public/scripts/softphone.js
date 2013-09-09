@@ -181,6 +181,10 @@ $(function() {
 
       var result = "";
 
+      sforce.interaction.cti.setSoftphoneHeight(500, function () {
+
+      });
+
       $.get("/calldata", { "CallSid":sid}, function(data) {
 
           result = JSON.parse(data);
