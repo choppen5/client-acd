@@ -187,19 +187,20 @@ $(function() {
           result.caller
 
           callData = {}
-          callData.callerName = result.request_name;
+          callData.callerName = result.requestor_name;
           callData.callerNumber = conn.parameters.From;
           callData.callerQueue = result.queue_name;
           callData.callerMessage = result.message;
           SP.functions.showCallData(callData);
-          
+          var name = result.requestor_name  || "";
+
+          sforce.interaction.searchAndScreenPop(inboundnum, 'con10=' + inboundnum + '&name_firstcon2=' + name,'inbound');
+
       }); 
 
 
       
-      var name = result.requestor_name || "";
-      var message = result.message || "";
-      sforce.interaction.searchAndScreenPop(inboundnum, 'con10=' + inboundnum + '&name_firstcon2=' + name ,'inbound');
+   
 
     });
 
