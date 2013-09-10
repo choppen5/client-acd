@@ -32,6 +32,9 @@ caller_id = settings.caller_id  #number your agents will click2dialfrom
 default_queue = settings.default_queue #need to change this to a sid?
 queue_id = settings.queue_id  #hardcoded! need to return a queue by friendly name..
 
+#new setting
+qname = settings.queue_name
+
 dqueueurl = settings.dqueueurl
 
 
@@ -46,8 +49,25 @@ dqueueurl = settings.dqueueurl
 #puts "queues = #{@queues}"
 
 #hardcoded queue... change this to grab a configured queue
-queue1 = @account.queues.get(queue_id)
 
+queueid = nil
+@queues.each do |q|
+  puts "q = #{q.friendly_name}"
+  if q.friendly_name == qname
+    queueid = q.sid
+  end
+end 
+
+unless queueid
+  #didn't find queue, create it
+  @queue = @account.queues.create(:friendly_name => qname)
+  puts "created queue #{qname}"
+  queueid = @queue.sid
+ end
+
+ puts "queueid = #{queueid}"
+
+queue1 = @account.queues.get(queueid)
 
 #puts "queue wait time: #{queue.average_wait_time}"
 userlist = Hash.new  #all users, in memory
@@ -213,7 +233,7 @@ post '/voice' do
     
  
 
-    callerid = params[:Caller]
+    callerid = params[:Caller]  
     #if special parameter requesting_party is passed, make it the caller id
     if params[:requesting_party]
       callerid = params[:requesting_party]

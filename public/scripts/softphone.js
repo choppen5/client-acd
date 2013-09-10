@@ -176,14 +176,8 @@ $(function() {
 
 
       var inboundnum = cleanInboundTwilioNumber(conn.parameters.From);
-      
       var sid = conn.parameters.CallSid
-
       var result = "";
-
-      sforce.interaction.cti.setSoftphoneHeight(500, function () {
-
-      });
 
       $.get("/calldata", { "CallSid":sid}, function(data) {
 
