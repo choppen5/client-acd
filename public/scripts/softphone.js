@@ -170,6 +170,7 @@ $(function() {
     Twilio.Device.incoming(function (conn) {
 
       // Update agent status 
+      sforce.interaction.setVisible(true);  //pop up CTI console
       SP.functions.updateAgentStatusText("ready", ("Call from: " + conn.parameters.From))
       // Enable answer button and attach to incoming call
       SP.functions.attachAnswerButton(conn);
@@ -271,6 +272,7 @@ $(function() {
     function startCall(response) { 
             
             //called onClick2dial
+            sforce.interaction.setVisible(true);  //pop up CTI console
             var result = JSON.parse(response.result);  
             var cleanednumber = cleanFormatting(result.number);
 
