@@ -353,15 +353,6 @@ post '/dial' do
     response.text
 end
 
-### queue stuff
-post '/caller' do
-   response = Twilio::TwiML::Response.new do |r|
-        r.Say("Lucy is not Ready.  You are going to be placed on hold")
-        r.Enqueue("MyQueue")
-        #r.Redirect('/wait')
-   end  
-   return response.text
-end
 
 ### ACD stuff - for tracking agent state
 get '/track' do
