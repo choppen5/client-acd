@@ -33,6 +33,8 @@ $(function() {
                     //alert("got token=" + token);
                     Twilio.Device.setup(token, {debug: true});
               });
+
+              SP.functions.startWebSocket();
           };
 
               //how  can we tell if sforce works before calling this?
@@ -257,20 +259,24 @@ $(function() {
 
 
 
-    // ** Agent Presence Stuff ** //
-   var wsaddress = 'wss://' + window.location.host  + "?clientname=" + SP.username
+    SP.functions.startWebSocket = function() {
+      // ** Agent Presence Stuff ** //
+      console.log(".startWebSocket...");
+     var wsaddress = 'wss://' + window.location.host  + "/websocket?clientname=" + SP.username
 
-   var ws = new WebSocket(wsaddress);
-    ws.onopen    = function()  { console.log('websocket opened'); };
-    ws.onclose   = function()  { console.log('websocket closed'); }
-    ws.onmessage = function(m) { 
-      console.log('websocket message: ' +  m.data);
-      
-      var result = JSON.parse(m.data);
+     var ws = new WebSocket(wsaddress);
+      ws.onopen    = function()  { console.log('websocket opened'); };
+      ws.onclose   = function()  { console.log('websocket closed'); }
+      ws.onmessage = function(m) { 
+        console.log('websocket message: ' +  m.data);
+        
+        var result = JSON.parse(m.data);
 
-      $("#team-status > .queues-status").text("Call Queue:  " + result.queuesize);
-      $("#team-status > .agents-status").text("Ready Agents:  " + result.readyagents); 
-    };
+        $("#team-status > .queues-status").text("Call Queue:  " + result.queuesize);
+        $("#team-status > .agents-status").text("Ready Agents:  " + result.readyagents); 
+      };
+
+    }
 
 
     // Set server-side status to ready / not-ready
