@@ -175,55 +175,56 @@ get '/' do
         client_name = default_client
   end
 
-  if !request.websocket? 
-     
-      erb :index, :locals => {}
-  else
-    request.websocket do |ws|
-      ws.onopen do
-        puts ws.object_id 
-        querystring = ws.request["query"]
-        #querry should be something like wsclient=coppenheimerATvccsystemsDOTcom
-        
-        clientname = querystring.split(/\=/)[1]
+  erb :index, :locals => {}
+end
+  
+get '/websocket' do 
 
-        if userlist.has_key?(clientname)
-          currentclientcount = userlist[clientname][2] || 0
-          newclientcount = currentclientcount + 1
-        else 
-          #user didn't exist, create them
-          newclientcount = 1
-        end  
-        userlist[clientname] = [" ", Time.now.to_f,newclientcount ]
-        settings.sockets << ws
-        
+  request.websocket do |ws|
+    ws.onopen do
+      puts ws.object_id 
+      querystring = ws.request["query"]
+      #querry should be something like wsclient=coppenheimerATvccsystemsDOTcom
+      
+      clientname = querystring.split(/\=/)[1]
+
+      if userlist.has_key?(clientname)
+        currentclientcount = userlist[clientname][2] || 0
+        newclientcount = currentclientcount + 1
+      else 
+        #user didn't exist, create them
+        newclientcount = 1
+      end  
+      userlist[clientname] = [" ", Time.now.to_f,newclientcount ]
+      settings.sockets << ws
+      
+    end
+    ws.onmessage do |msg|
+      puts "got websocket message"
+      EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
+    end
+    ws.onclose do
+      warn("wetbsocket closed")
+      querystring = ws.request["query"]
+      clientname = querystring.split(/\=/)[1]
+
+      settings.sockets.delete(ws)
+      
+      currentclientcount = userlist[clientname][2]
+      newclientcount = currentclientcount - 1
+      userlist[clientname][2] = newclientcount
+
+      #if not more clients are registered, set to not ready
+      if newclientcount < 1
+         userlist[clientname][0] = "LOGGEDOUT"
+         userlist[clientname][1] = Time.now 
       end
-      ws.onmessage do |msg|
-        puts "got websocket message"
-        EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
-      end
-      ws.onclose do
-        warn("wetbsocket closed")
-        querystring = ws.request["query"]
-        clientname = querystring.split(/\=/)[1]
 
-        settings.sockets.delete(ws)
-        
-        currentclientcount = userlist[clientname][2]
-        newclientcount = currentclientcount - 1
-        userlist[clientname][2] = newclientcount
+      #remove client count
 
-        #if not more clients are registered, set to not ready
-        if newclientcount < 1
-           userlist[clientname][0] = "LOGGEDOUT"
-           userlist[clientname][1] = Time.now 
-        end
-
-        #remove client count
-
-      end
     end
   end
+  
 end
 
 
