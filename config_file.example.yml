@@ -5,7 +5,7 @@ app_id: 'APxxx....YOURAPPID'
 # put your default Twilio Client name here, for when a phone number isn't given
 default_client: "default_client"  #userdefined
 caller_id: "+14156926291"  		 #should be a twilio number, agents will call from this number
-default_queue: "CustomerService" #need to change this to a sid?
-queue_id: "QU096deb1bc9f84efd9c46a7b158fc3ab9"  #hardcoded! need to return a queue by friendly name..
 
 dqueueurl: "https://your.server.com/voice"    #this needs to be full path, as twilio server sends calls 
+
+queue_name: "CustomerService"  #this will be created if it does not exist

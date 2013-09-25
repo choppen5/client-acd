@@ -29,7 +29,7 @@ app_id = settings.app_id
 # put your default Twilio Client name here, for when a phone number isn't given
 default_client = settings.default_client
 caller_id = settings.caller_id  #number your agents will click2dialfrom
-default_queue = settings.default_queue #need to change this to a sid?
+
 queue_id = settings.queue_id  #hardcoded! need to return a queue by friendly name..
 
 #new setting
@@ -39,7 +39,7 @@ dqueueurl = settings.dqueueurl
 
 
 @client = Twilio::REST::Client.new(account_sid, auth_token)
-#queue = @client.account.queues.create(:friendly_name => default_queue )
+
 
 ################ ACCOUNTS ################
 
@@ -55,6 +55,7 @@ queueid = nil
   puts "q = #{q.friendly_name}"
   if q.friendly_name == qname
     queueid = q.sid
+    puts "found #{queueid} for #{q.friendly_name}"
   end
 end 
 
@@ -260,8 +261,7 @@ post '/voice' do
     bestclient = getlongestidle(userlist)
       if bestclient == "NoReadyAgents"  
           #nobody to take the call... should redirect to a queue here
-          puts "No ready client!..should hold.. queue.. etc here." 
-          dialqueue = default_queue 
+          dialqueue = qname
       else
           puts "Found best client! #{bestclient}"
           client_name = bestclient
@@ -401,29 +401,6 @@ get '/status' do
     return status
 end
 
-get '/longestidle' do
-    #gets all "Ready" agents, sorts by longest idle 
-
-   readyusers = userlist.keep_if {|key, value|
-        value[0] == "Ready"
-    }
-
-    if readyusers.count < 1 
-      return "NoReadyAgents" 
-      break
-    end
-
-    sorted = readyusers.sort_by { |x|
-          x[1]
-          #sorts by idle time, {"sam" => ["Ready", 124444]}
-    }
-
-    longestidleagent = sorted.first[0]   #first element of first array is name of user
-    return longestidleagent 
-
-end
-
-
 
 def getlongestidle (userlist) 
       #gets all "Ready" agents, sorts by longest idle 
@@ -448,28 +425,7 @@ def getlongestidle (userlist)
 
 end
 
-
-## queue stuff
-post '/wait' do
-   response = Twilio::TwiML::Response.new do |r|
-        r.Say("You are currently on hold")
-        r.Redirect('/wait')        
-   end  
-   response.text
-end
-
-post '/agent' do
-   queue = params[:queue]
-   if queue.nil?
-     queue = default_queue
-   end
-   response = Twilio::TwiML::Response.new do |r|
-          r.Dial do |d|
-            d.Queue(queue)
-          end
-   end
-   return response.text
-end  
+ 
 
 get '/calldata' do 
     #sid will be a client call, need to get parent for attached data
