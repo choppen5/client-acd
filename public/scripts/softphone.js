@@ -6,9 +6,14 @@ $(function() {
 
     // Global state
     SP.state = {};
-    SP.state.callNumber = null
+    SP.state.callNumber = null;
+    SP.username = "default_client";
+
 
     SP.functions = {};
+
+    
+
 
     // ** UI Widgets ** //
 
@@ -101,11 +106,22 @@ $(function() {
       SP.functions.notReady();
     });
 
+      $("#agent-status-controls > button.userinfo").click( function( ) {
+      SP.functions.getSFDCUserInfo();
+    });
+
+
 
     // ** Twilio Client Stuff ** //
+    
+
     Twilio.Device.setup(window.token, {debug: true});
 
     Twilio.Device.ready(function (device) {
+
+      SP.functions.getSFDCUserInfo();
+      //alert("username = " + SP.username )
+
       sforce.interaction.cti.enableClickToDial();
       sforce.interaction.cti.onClickToDial(startCall); 
       SP.functions.ready();
@@ -160,7 +176,7 @@ $(function() {
         SP.functions.detachAnswerButton();
 
         //send status info
-        $.get("/track", { "from":"default_client", "status":"OnCall" }, function(data) {
+        $.get("/track", { "from":SP.username, "status":"OnCall" }, function(data) {
             
         });
 
@@ -213,7 +229,7 @@ $(function() {
 
 
     // ** Agent Presence Stuff ** //
-   var wsaddress = 'wss://' + window.location.host  + "?clientname=default_client"
+   var wsaddress = 'wss://' + window.location.host  + "?clientname=" + SP.username
 
    var ws = new WebSocket(wsaddress);
     ws.onopen    = function()  { console.log('websocket opened'); };
@@ -230,20 +246,51 @@ $(function() {
 
     // Set server-side status to ready / not-ready
     SP.functions.notReady = function() {
-      $.get("/track", { "from":"default_client", "status":"NotReady" }, function(data) {
+      $.get("/track", { "from":SP.username, "status":"NotReady" }, function(data) {
         SP.functions.updateStatus();
       });
     }
 
     SP.functions.ready = function() {
-      $.get("/track", { "from":"default_client", "status":"Ready" }, function(data) {
+      $.get("/track", { "from":SP.username, "status":"Ready" }, function(data) {
           SP.functions.updateStatus();
       });
     }
 
+    SP.functions.getSFDCUserInfo = function () {
+
+        //alert("starting getting Userinfo");
+
+          var callback = function (response) {
+              if (response.result) {
+                //alert("response = " + response);
+                console.log("result = " + response.result);
+                var useresult = response.result;
+                useresult = useresult.replace("@", "AT");
+                useresult = useresult.replace(".", "DOT");
+                SP.username = useresult;
+                //alert("setting SP.username = " + SP.username);
+                //alert("getting userinfo = " + resonse.result.userID);
+                //var result = Sfdc.JSON.parse(response.result);
+                //alert("parsed result = " + result);
+
+              } else {
+                console.log("error = " + response.error);
+              
+              }
+          };
+
+          sforce.interaction.runApex('UserInfo', 'getUserName', '' ,callback);
+
+          //sforce.interaction.runApex('connection', 'getUserInfo', '' ,callback);
+
+
+  }
+
+
     // Check the status on the server and update the agent status dialog accordingly
     SP.functions.updateStatus = function() {
-      $.get("/status", { "from":"default_client"}, function(data) {
+      $.get("/status", { "from":SP.username}, function(data) {
 
         if (data == "NotReady") {
              SP.functions.updateAgentStatusText("notReady", "Not Ready")
@@ -318,6 +365,10 @@ $(function() {
             console.log("save params = " + saveParams);
             sforce.interaction.saveLog('Task', saveParams);
   }
+
+
+
+
 
 
 });
