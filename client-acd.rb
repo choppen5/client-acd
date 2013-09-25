@@ -155,6 +155,18 @@ end
 
 Thread.abort_on_exception = true
 
+get '/token' do
+  client_name = params[:client]
+  if client_name.nil?
+        client_name = default_client
+  end
+  capability = Twilio::Util::Capability.new account_sid, auth_token
+      # Create an application sid at twilio.com/user/account/apps and use it here
+      capability.allow_client_outgoing app_id 
+      capability.allow_client_incoming client_name
+      token = capability.generate
+  return token
+end 
 
 get '/' do
   #for hmtl client
@@ -165,12 +177,7 @@ get '/' do
 
   if !request.websocket? 
      
-      capability = Twilio::Util::Capability.new account_sid, auth_token
-      # Create an application sid at twilio.com/user/account/apps and use it here
-      capability.allow_client_outgoing app_id 
-      capability.allow_client_incoming client_name
-      token = capability.generate
-      erb :index, :locals => {:token => token, :client_name => client_name}
+      erb :index, :locals => {}
   else
     request.websocket do |ws|
       ws.onopen do
@@ -241,10 +248,6 @@ post '/voice' do
     elsif params[:Direction] == "outbound-api" #special case when call queued from a outbound leg
       callerid = params[:To]
     end
-
-
-
-
 
     #capture call data
     if calls[sid] 

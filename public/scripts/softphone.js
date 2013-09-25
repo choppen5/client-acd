@@ -13,7 +13,37 @@ $(function() {
     SP.functions = {};
 
     
+    SP.functions.getSFDCUserInfo = function () {
+      
+          var callback = function (response) {
+              if (response.result) {
+                console.log("result = " + response.result);
+                var useresult = response.result;
+                useresult = useresult.replace("@", "AT");
+                useresult = useresult.replace(".", "DOT");
+                SP.username = useresult;
 
+              } else {
+                console.log("error = " + response.error);
+              
+              }
+
+              //TODO: need a way to get here when not inside Salesforce - this is only called in the runApex callback.
+              $.get("/token", {"client":SP.username}, function (token) {
+                    //alert("got token=" + token);
+                    Twilio.Device.setup(token, {debug: true});
+              });
+          };
+
+              //how  can we tell if sforce works before calling this?
+              sforce.interaction.runApex('UserInfo', 'getUserName', '' ,callback);
+       
+    }
+
+
+    //1. run sfdc code
+    
+      
 
     // ** UI Widgets ** //
 
@@ -113,15 +143,14 @@ $(function() {
 
 
     // ** Twilio Client Stuff ** //
+
+    // get username, generate token, set up device with token. callbacks bitch.
+    SP.functions.getSFDCUserInfo();
     
 
-    Twilio.Device.setup(window.token, {debug: true});
+    
 
     Twilio.Device.ready(function (device) {
-
-      SP.functions.getSFDCUserInfo();
-      //alert("username = " + SP.username )
-
       sforce.interaction.cti.enableClickToDial();
       sforce.interaction.cti.onClickToDial(startCall); 
       SP.functions.ready();
@@ -256,36 +285,6 @@ $(function() {
           SP.functions.updateStatus();
       });
     }
-
-    SP.functions.getSFDCUserInfo = function () {
-
-        //alert("starting getting Userinfo");
-
-          var callback = function (response) {
-              if (response.result) {
-                //alert("response = " + response);
-                console.log("result = " + response.result);
-                var useresult = response.result;
-                useresult = useresult.replace("@", "AT");
-                useresult = useresult.replace(".", "DOT");
-                SP.username = useresult;
-                //alert("setting SP.username = " + SP.username);
-                //alert("getting userinfo = " + resonse.result.userID);
-                //var result = Sfdc.JSON.parse(response.result);
-                //alert("parsed result = " + result);
-
-              } else {
-                console.log("error = " + response.error);
-              
-              }
-          };
-
-          sforce.interaction.runApex('UserInfo', 'getUserName', '' ,callback);
-
-          //sforce.interaction.runApex('connection', 'getUserInfo', '' ,callback);
-
-
-  }
 
 
     // Check the status on the server and update the agent status dialog accordingly
