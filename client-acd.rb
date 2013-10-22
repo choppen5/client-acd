@@ -1,16 +1,10 @@
 require 'rubygems'
 require 'sinatra'
-require 'sinatra/config_file' #Config
 require 'twilio-ruby'
 require 'json'
 require 'sinatra'
 require 'sinatra-websocket'
 require 'pp'
-
-
-
-
-config_file 'config_file.yml'
 
 
 set :server, 'thin'
@@ -22,21 +16,17 @@ disable :protection
 
 ############ CONFIG ###########################
 # Find these values at twilio.com/user/account
-account_sid = settings.account_sid
-auth_token =  settings.auth_token
-app_id = settings.app_id
+account_sid = ENV['twilio_account_sid']
+auth_token =  ENV['twilio_account_token']
+app_id =  ENV['twilio_app_id']
+caller_id = ENV['twilio_caller_id']  #number your agents will click2dialfrom
+
+qname = ENV['twilio_queue_name']
+dqueueurl = ENV['twilio_dqueue_url']
+
 
 # put your default Twilio Client name here, for when a phone number isn't given
-default_client = settings.default_client
-caller_id = settings.caller_id  #number your agents will click2dialfrom
-
-queue_id = settings.queue_id  #hardcoded! need to return a queue by friendly name..
-
-#new setting
-qname = settings.queue_name
-
-dqueueurl = settings.dqueueurl
-
+default_client =  "default_client"
 
 @client = Twilio::REST::Client.new(account_sid, auth_token)
 
@@ -466,13 +456,13 @@ post '/mobile-call-request' do
   requestor_name = params[:name]
   message = params[:message]
 
- 
-url = request.base_url
-unless request.base_url.include? 'localhost'
-   url = url.sub('http', 'https') 
-end
-puts "mobile call request url = #{url}"
+  url = request.base_url
+  unless request.base_url.include? 'localhost'
+     url = url.sub('http', 'https') 
+  end
+  puts "base url = #{url}"
 
+ 
   @client = Twilio::REST::Client.new(account_sid, auth_token)
   # outbound PSTN call to requesting party. They will be call screened before being connected.
   @client.account.calls.create(:from => caller_id, :to => requesting_party, :url => URI.escape("#{url}/connect-mobile-call-to-agent?queue_name=#{queue_name}&requestor_name=#{requestor_name}&requesting_party=#{requesting_party}&message=#{message}"))
