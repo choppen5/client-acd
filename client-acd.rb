@@ -115,12 +115,13 @@ Thread.new do
     
 
       if callerinqueue #only check for route if there is a queue member
-        bestclient = getlongestidle(userlist)
+        bestclient = getlongestidle(userlist, false)
         if bestclient == "NoReadyAgents"  
           #nobody to take the call... should redirect to a queue here
           puts "No ready agents.. keeq waiting...."
         else
           puts "Found best client! #{bestclient}"
+          userlist[bestclient][0] = "DeQueing"
           topmember.dequeue(dqueueurl)
           #get clients phone number, if any
         end 
@@ -252,7 +253,7 @@ post '/voice' do
     end 
    
 
-    bestclient = getlongestidle(userlist)
+    bestclient = getlongestidle(userlist, true)
       if bestclient == "NoReadyAgents"  
           #nobody to take the call... should redirect to a queue here
           dialqueue = qname
@@ -396,14 +397,21 @@ get '/status' do
 end
 
 
-def getlongestidle (userlist) 
+def getlongestidle (userlist, callrouting) 
       #gets all "Ready" agents, sorts by longest idle 
 
    readyusers = userlist.clone  #don't 
 
-   readyusers.keep_if {|key, value|
-        value[0] == "Ready"
-    }
+   #if callrouting ==true, we are ready to send the call to this agent, even if it is dequring
+   if callrouting == true
+     readyusers.keep_if {|key, value|
+          value[0] == "Ready" || value[0] == "DeQueing"
+      }
+   else
+    readyusers.keep_if {|key, value|
+          value[0] == "Ready"
+      }
+   end
 
     if readyusers.count < 1 
       return "NoReadyAgents" 
