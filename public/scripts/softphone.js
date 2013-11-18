@@ -240,7 +240,7 @@ $(function() {
           SP.functions.showCallData(callData);
           var name = result.requestor_name  || "";
 
-          sforce.interaction.searchAndScreenPop(inboundnum, 'con10=' + inboundnum + '&name_firstcon2=' + name,'inbound');
+          sforce.interaction.searchAndScreenPop(inboundnum, 'con10=' + inboundnum + 'con12=' + inboundnum + '&name_firstcon2=' + name,'inbound');
 
       }); 
 
