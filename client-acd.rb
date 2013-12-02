@@ -396,6 +396,34 @@ get '/status' do
     return status
 end
 
+ 
+
+get '/calldata' do 
+    #sid will be a client call, need to get parent for attached data
+    sid = params[:CallSid]
+  
+    @client = Twilio::REST::Client.new(account_sid, auth_token)
+    @call = @client.account.calls.get(sid)
+
+
+    parentsid = @call.parent_call_sid
+    puts "parent sid for #{sid} = #{parentsid}" 
+
+    calldata = calls[@call.parent_call_sid]
+
+    #puts "calls sid = #{calls[sid]}"
+    
+
+    if calls[parentsid]
+      msg =  { :agentname => calldata[:agent], :agentstatus => calldata[:status], :queue_name => calldata[:queue_name], :requestor_name => calldata[:requestor_name], :message => calldata[:message]}.to_json
+    else
+      msg = "NoSID"
+    end
+
+    return msg 
+
+end 
+
 
 def getlongestidle (userlist, callrouting) 
       #gets all "Ready" agents, sorts by longest idle 
@@ -427,83 +455,6 @@ def getlongestidle (userlist, callrouting)
 
 end
 
- 
 
-get '/calldata' do 
-    #sid will be a client call, need to get parent for attached data
-    sid = params[:CallSid]
-  
-    @client = Twilio::REST::Client.new(account_sid, auth_token)
-    @call = @client.account.calls.get(sid)
-
-
-    parentsid = @call.parent_call_sid
-    puts "parent sid for #{sid} = #{parentsid}" 
-
-    calldata = calls[@call.parent_call_sid]
-
-    #puts "calls sid = #{calls[sid]}"
-    
-
-    if calls[parentsid]
-      msg =  { :agentname => calldata[:agent], :agentstatus => calldata[:status], :queue_name => calldata[:queue_name], :requestor_name => calldata[:requestor_name], :message => calldata[:message]}.to_json
-    else
-      msg = "NoSID"
-    end
-
-    return msg 
-
-end 
-
-## requests from mobile application to initiate PSTN callback
-post '/mobile-call-request' do
-
-  # todo change parameter names on mobile device to match
-  requesting_party = params[:phone_number]
-  queue_name = params[:queue]
-  requestor_name = params[:name]
-  message = params[:message]
-
-  url = request.base_url
-  unless request.base_url.include? 'localhost'
-     url = url.sub('http', 'https') 
-  end
-  puts "base url = #{url}"
-
- 
-  @client = Twilio::REST::Client.new(account_sid, auth_token)
-  # outbound PSTN call to requesting party. They will be call screened before being connected.
-  @client.account.calls.create(:from => caller_id, :to => requesting_party, :url => URI.escape("#{url}/connect-mobile-call-to-agent?queue_name=#{queue_name}&requestor_name=#{requestor_name}&requesting_party=#{requesting_party}&message=#{message}"))
-  
-
-  return ""
-
-end
-
-
-post '/connect-mobile-call-to-agent' do
-
-  requesting_party = params[:requesting_party]
-  queue_name = params[:queue_name]
-  requestor_name = params[:requestor_name]
-  message = params[:message]
-  callerid = params[:to]
-
-  response = Twilio::TwiML::Response.new do |r|
-
-    # call screen
-    r.Pause "1"
-    r.Gather(:action => URI.escape("/voice?requesting_party=#{requesting_party}&queue_name=#{queue_name}&requestor_name=#{requestor_name}&message=#{message}&requesting_party=#{requesting_party}"), :timeout => "10", :numDigits => "1") do |g|
-      g.Say("Press any key to speak to an agent now.")
-    end
-
-    # no key was pressed
-    r.hangup
-
-    return r.text
-
-  end
-
-end
 
 
