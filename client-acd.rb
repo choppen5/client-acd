@@ -223,50 +223,26 @@ end
 #for incoming voice calls.. not for client to client routing (move that elsewhere)
 post '/voice' do
 
-    puts "params  = #{params}"
-
-    number = params[:PhoneNumber]
     sid = params[:CallSid]
-    queue_name = params[:queue_name]
-    requestor_name = params[:requestor_name]
-    message = params[:message]
-    
- 
-
     callerid = params[:Caller]  
-    #if special parameter requesting_party is passed, make it the caller id
-    if params[:requesting_party]
-      callerid = params[:requesting_party]
-    elsif params[:Direction] == "outbound-api" #special case when call queued from a outbound leg
-      callerid = params[:To]
-    end
 
-    #capture call data
     if calls[sid] 
        puts "found sid #{sid} = #{calls[sid]}"
     else
        puts "creating sid #{sid}"
        calls[sid] = {}
-       calls[sid][:queue_name] = queue_name
-       calls[sid][:requestor_name] = requestor_name
-       calls[sid][:message] = message
     end 
    
 
     bestclient = getlongestidle(userlist, true)
       if bestclient == "NoReadyAgents"  
-          #nobody to take the call... should redirect to a queue here
           dialqueue = qname
       else
           puts "Found best client! #{bestclient}"
           client_name = bestclient
-          #get clients phone number, if any
       end 
 
     #if no client is choosen, route to queue
-
-
-
     response = Twilio::TwiML::Response.new do |r|  
 
         if dialqueue  #no agents avalible
@@ -278,8 +254,7 @@ post '/voice' do
                 puts "dialing client #{client_name}"
                 calls[sid][:agent] = client_name
                 calls[sid][:status] = "Ringing" 
-                d.Client client_name
-                
+                d.Client client_name   
             end
         end
     end
@@ -415,7 +390,7 @@ get '/calldata' do
     
 
     if calls[parentsid]
-      msg =  { :agentname => calldata[:agent], :agentstatus => calldata[:status], :queue_name => calldata[:queue_name], :requestor_name => calldata[:requestor_name], :message => calldata[:message]}.to_json
+      msg =  { :agentname => calldata[:agent], :agentstatus => calldata[:status]}.to_json
     else
       msg = "NoSID"
     end
