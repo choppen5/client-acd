@@ -37,8 +37,10 @@ $(function() {
               SP.functions.startWebSocket();
           };
 
+
               //how  can we tell if sforce works before calling this?
-              sforce.interaction.runApex('UserInfo', 'getUserName', '' ,callback);
+             sforce.interaction.runApex('UserInfo', 'getUserName', '' ,callback);
+
        
     }
 
@@ -296,8 +298,7 @@ $(function() {
     // Check the status on the server and update the agent status dialog accordingly
     SP.functions.updateStatus = function() {
       $.get("/status", { "from":SP.username}, function(data) {
-
-        if (data == "NotReady") {
+        if (data == "NotReady" || data == "Missed") {
              SP.functions.updateAgentStatusText("notReady", "Not Ready")
          }
 

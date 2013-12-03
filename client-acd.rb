@@ -7,7 +7,7 @@ require 'sinatra-websocket'
 require 'pp'
 
 
-set :server, 'thin'
+
 set :sockets, []
  
 disable :protection
