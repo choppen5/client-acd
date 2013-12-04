@@ -18,6 +18,8 @@ configure do
   set :mongo_db, conn.db('test')
 end
 
+mongocalls = settings.mongo_db['calls']
+
 
 set :sockets, []
  
@@ -242,8 +244,6 @@ post '/voice' do
     else
        puts "creating sid #{sid}"
        calls[sid] = {}
-       new_id = settings.mongo_db['test'].insert params
-
     end 
    
 
@@ -267,6 +267,9 @@ post '/voice' do
                 puts "dialing client #{client_name}"
                 calls[sid][:agent] = client_name
                 calls[sid][:status] = "Ringing" 
+                agentinfo = { _id: sid, agent: client_name, status: "Ringing" }
+                sidinsert = mongocalls.update({_id: sid},  agentinfo, {upsert: true})
+                puts "inserted #{sidinsert}"
 
                 d.Client client_name   
             end
@@ -285,6 +288,14 @@ post '/handleDialCallStatus' do
     # 
   sid = params[:CallSid]
 
+  mongosidinfo = {}
+
+  mongosidinfo = mongocalls.find_one ({_id: sid})
+  puts "mongosidinfo = #{mongosidinfo} "
+  
+  mongoagent = mongosidinfo["agent"]
+  puts "agent for this sid = #{mongoagent}"
+
 
   response = Twilio::TwiML::Response.new do |r| 
 
@@ -292,6 +303,9 @@ post '/handleDialCallStatus' do
       if params['DialCallStatus'] == "no-answer"
         #if a call got here when ringing a client, they didn't answer.  set values
         calls[sid][:status] = "Missed"
+        mongocalls.update({_id: sid}, { "$set" => {status:  "Missed"}}, {upsert: false})
+
+
         agent = calls[sid][:agent]
 
         puts calls # {"CAcb90adcb68b6e51b96d8216d105ff645"=>{:client=>"defaultclient", :status=>"Ringing", "status"=>"Missed"}}
