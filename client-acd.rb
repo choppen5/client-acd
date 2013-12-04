@@ -5,7 +5,18 @@ require 'json'
 require 'sinatra'
 require 'sinatra-websocket'
 require 'pp'
+require 'mongo'
+require 'json/ext' # required for .to_json
 
+
+
+include Mongo
+
+configure do
+  conn = MongoClient.new("localhost", 27017)
+  set :mongo_connection, conn
+  set :mongo_db, conn.db('test')
+end
 
 
 set :sockets, []
@@ -231,6 +242,8 @@ post '/voice' do
     else
        puts "creating sid #{sid}"
        calls[sid] = {}
+       new_id = settings.mongo_db['test'].insert params
+
     end 
    
 
@@ -254,6 +267,7 @@ post '/voice' do
                 puts "dialing client #{client_name}"
                 calls[sid][:agent] = client_name
                 calls[sid][:status] = "Ringing" 
+
                 d.Client client_name   
             end
         end
@@ -270,6 +284,7 @@ post '/handleDialCallStatus' do
   #rules - if you dialed a client, and the response is "no-answer", set client to not ready.
     # 
   sid = params[:CallSid]
+
 
   response = Twilio::TwiML::Response.new do |r| 
 
