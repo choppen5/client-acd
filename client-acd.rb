@@ -18,9 +18,6 @@ configure do
   set :mongo_db, conn.db('test')
 end
 
-mongocalls = settings.mongo_db['calls']
-
-
 set :sockets, []
  
 disable :protection
@@ -77,6 +74,10 @@ queue1 = @account.queues.get(queueid)
 userlist = Hash.new  #all users, in memory
 calls = Hash.new # tracked calls, in memory
 
+mongoagents = settings.mongo_db['agents']
+mongocalls = settings.mongo_db['calls']
+
+
 
 activeusers = 0
 
@@ -118,6 +119,12 @@ Thread.new do
 
     puts "qsize = #{qsize}"
 
+    #mongo version
+    mongoreadyagents = mongoagents.find({ status: "Ready"}).count()
+    puts "mongoreadyagent = #{mongoreadyagents}"
+
+
+
     #get ready users (need an object!)
     readyusers = userlist.clone  
     readyusers.keep_if {|key, value|
@@ -128,13 +135,18 @@ Thread.new do
     
 
       if callerinqueue #only check for route if there is a queue member
-        bestclient = getlongestidle(userlist, false)
+        bestclient = getlongestidle(userlist, false, mongoagents)
         if bestclient == "NoReadyAgents"  
           #nobody to take the call... should redirect to a queue here
           puts "No ready agents.. keeq waiting...."
         else
           puts "Found best client! #{bestclient}"
+
+          ##mongosfuff
+          mongoagents.update({_id: bestclient} , { "$set" =>   {status: "DeQueing" }  } )
+
           userlist[bestclient][0] = "DeQueing"
+
           topmember.dequeue(dqueueurl)
           #get clients phone number, if any
         end 
@@ -192,6 +204,11 @@ get '/websocket' do
       
       clientname = querystring.split(/\=/)[1]
 
+      ###mongo stuff
+      mongoagents.update({_id: clientname} , { "$set" =>   {status: "LoggingIn",readytime: Time.now.to_f  },  "$inc"  =>  {:currentclientcount => 1}} , {upsert: true})
+       
+      #{  "$inc" => {currentclientcount: 1}}
+
       if userlist.has_key?(clientname)
         currentclientcount = userlist[clientname][2] || 0
         newclientcount = currentclientcount + 1
@@ -213,15 +230,31 @@ get '/websocket' do
       clientname = querystring.split(/\=/)[1]
 
       settings.sockets.delete(ws)
+
+      ###mongo stuff
+      mongoagents.update({_id: clientname} , {  "$inc" => {currentclientcount: -1}});
       
+
       currentclientcount = userlist[clientname][2]
       newclientcount = currentclientcount - 1
       userlist[clientname][2] = newclientcount
 
+
+      #mongo version
+      mongonewclientcount = mongoagents.find_one({ _id: clientname})
+      puts "updating mongonewclientcount = #{mongonewclientcount}"
+      if mongonewclientcount 
+        if mongonewclientcount["currentclientcount"] < 1
+           mongoagents.update({_id: clientname} , {  "$set" => {status: "LOGGEDOUT"}});
+        end
+      end
+
+
+
       #if not more clients are registered, set to not ready
       if newclientcount < 1
          userlist[clientname][0] = "LOGGEDOUT"
-         userlist[clientname][1] = Time.now 
+         userlist[clientname][1] = Time.now   
       end
 
       #remove client count
@@ -247,7 +280,7 @@ post '/voice' do
     end 
    
 
-    bestclient = getlongestidle(userlist, true)
+    bestclient = getlongestidle(userlist, true, mongoagents)
       if bestclient == "NoReadyAgents"  
           dialqueue = qname
       else
@@ -354,6 +387,7 @@ end
 
 
 ### ACD stuff - for tracking agent state
+#should prob change this to a post, as it is updating parameters
 get '/track' do
     activeusers = 0
     from = params[:from]
@@ -372,16 +406,9 @@ get '/track' do
 
     userlist[from] = [status, Time.now.to_f, currentclientcount ]
 
-    
-    activeusers = 0 
-    userlist.each do |key, value|
-      puts "#{key} = #{value}"
-      activeusers += 1 if value.first == "Ready"
-    end
-    
-    usercount = userlist.length  
+    #mongostuff
+    mongoagents.update({_id: from} , { "$set" =>   {status: status,readytime: Time.now.to_f  }})
 
-    p "Number of users #{usercount}, number of readyusers = #{activeusers}, currentclientcount = #{currentclientcount}"
   
 end
 
@@ -389,7 +416,19 @@ get '/status' do
     #returns status for a particular client
     from = params[:from]
     p "from #{from}"
-    #grab the first element in the status array for this user ie, [\"Ready\", 1376194403.9692101]"
+
+    #mongo stuff
+    agentstatus = mongoagents.find_one ({_id: from})
+    if agentstatus
+       agentstatus = agentstatus["status"]
+    else
+        return ""
+    end
+
+    return agentstatus
+
+
+
 
     if userlist.has_key?(from)
       status = userlist[from].first  
@@ -429,10 +468,25 @@ get '/calldata' do
 end 
 
 
-def getlongestidle (userlist, callrouting) 
+def getlongestidle (userlist, callrouting, mongoagents) 
       #gets all "Ready" agents, sorts by longest idle 
 
+
+   #yea! replace whole function with one line of mongo.
+   #"$or" => [ {status: "Ready"}]
+   mongoreadyagent =  mongoagents.find_one( { "$query" => { "$or" => [ {status: "Ready"}, status: "DeQueing"] } , "$orderby" => {readytime: 1}  } )
+   puts "mongoreadyagent = #{mongoreadyagent}"
+   mongolongestidleagent = ""
+
+   if mongoreadyagent
+      mongolongestidleagent = mongoreadyagent["_id"]
+   end
+
+   puts "mongolongestidleagent = #{mongolongestidleagent}"
+
+
    readyusers = userlist.clone  #don't 
+
 
    #if callrouting ==true, we are ready to send the call to this agent, even if it is dequring
    if callrouting == true
