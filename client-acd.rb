@@ -7,7 +7,10 @@ require 'sinatra-websocket'
 require 'pp'
 require 'mongo'
 require 'json/ext' # required for .to_json
+require 'logger'
 
+logger = Logger.new(STDOUT)
+logger.level = Logger::DEBUG  #change to to get log level input from configuration
 
 
 include Mongo
@@ -87,15 +90,8 @@ $sum = 0
 #todo - add exception handling for threads
 Thread.new do 
   while true do
-     sleep 1
+     sleep(1.0/2.0)
      $sum += 1
-
-     #print out users
-     puts "printing user list.."
-     userlist.each do |key, value|
-      puts "#{key} = #{value}"
-      activeusers += 1 if value.first == "Ready"
-    end
 
      topmember = 0
      callerinqueue = false
@@ -113,59 +109,31 @@ Thread.new do
         end
 
     end 
-  
-
-
-
-    puts "qsize = #{qsize}"
 
     #mongo version
     mongoreadyagents = mongoagents.find({ status: "Ready"}).count()
-    puts "mongoreadyagent = #{mongoreadyagents}"
+    readycount = mongoreadyagents || 0
 
-
-
-    #get ready users (need an object!)
-    readyusers = userlist.clone  
-    readyusers.keep_if {|key, value|
-            value[0] == "Ready"
-        }
-
-    readycount = readyusers.count.to_i.to_s  || 0
+    #print out all ready agents in debug mode
+    logger.debug(mongoagents.find.to_a)
     
-
       if callerinqueue #only check for route if there is a queue member
         bestclient = getlongestidle(userlist, false, mongoagents)
         if bestclient == "NoReadyAgents"  
-          #nobody to take the call... should redirect to a queue here
-          puts "No ready agents.. keeq waiting...."
+          logger.debug("No Ready agents")
         else
-          puts "Found best client! #{bestclient}"
-
-          ##mongosfuff
+          logger.info(puts "Found best client - routing to #{bestclient}")
           mongoagents.update({_id: bestclient} , { "$set" =>   {status: "DeQueing" }  } )
-
-          userlist[bestclient][0] = "DeQueing"
-
           topmember.dequeue(dqueueurl)
-          #get clients phone number, if any
         end 
       end 
 
-      
-
       settings.sockets.each{|s| 
-        #msg = '{"queuesize": ' +  qsize  + ', "readyagents": '  +  readycount + '}'
         msg =  { :queuesize => qsize, :readyagents => readycount}.to_json
-        #msg.to_json
         puts "sending #{msg}"
         s.send(msg) 
       } 
-        
-
-     #puts "average queue wait time: #{queue1.average_wait_time}"
-     #puts "queue depth = #{queue.depth}"
-     puts "run = #{$sum} #{Time.now}"
+     logger.debug("run = #{$sum} #{Time.now} qsize = #{qsize} readyagents = #{readycount}")
   end
 end
 
@@ -199,165 +167,104 @@ get '/websocket' do
   request.websocket do |ws|
     ws.onopen do
       puts ws.object_id 
-      querystring = ws.request["query"]
-      #querry should be something like wsclient=coppenheimerATvccsystemsDOTcom
-      
-      clientname = querystring.split(/\=/)[1]
 
-      ###mongo stuff
+      #query is wsclient=salesforceATuserDOTcom
+      querystring = ws.request["query"]
+      clientname = querystring.split(/\=/)[1]
+      logger.info("Client #{clientname} connected from Websockets")
+
+      #update database with list of clients
       mongoagents.update({_id: clientname} , { "$set" =>   {status: "LoggingIn",readytime: Time.now.to_f  },  "$inc"  =>  {:currentclientcount => 1}} , {upsert: true})
-       
-      #{  "$inc" => {currentclientcount: 1}}
+      settings.sockets << ws     
+    end
 
-      if userlist.has_key?(clientname)
-        currentclientcount = userlist[clientname][2] || 0
-        newclientcount = currentclientcount + 1
-      else 
-        #user didn't exist, create them
-        newclientcount = 1
-      end  
-      userlist[clientname] = [" ", Time.now.to_f,newclientcount ]
-      settings.sockets << ws
-      
-    end
-    ws.onmessage do |msg|
-      puts "got websocket message"
-      EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
-    end
+    
+    ##websocket close
     ws.onclose do
-      warn("wetbsocket closed")
       querystring = ws.request["query"]
       clientname = querystring.split(/\=/)[1]
+
+      logger.info("Websocket closed for #{clientname}")
 
       settings.sockets.delete(ws)
 
-      ###mongo stuff
+      ###Reduce count of websocket connections for this client
       mongoagents.update({_id: clientname} , {  "$inc" => {currentclientcount: -1}});
-      
 
-      currentclientcount = userlist[clientname][2]
-      newclientcount = currentclientcount - 1
-      userlist[clientname][2] = newclientcount
-
-
-      #mongo version
+      #If this username has 0 clients, change him to logged out in the database.
       mongonewclientcount = mongoagents.find_one({ _id: clientname})
-      puts "updating mongonewclientcount = #{mongonewclientcount}"
-      if mongonewclientcount 
+      logger.debug("updating mongonewclientcount = #{mongonewclientcount}")
+      if mongonewclientcount  
         if mongonewclientcount["currentclientcount"] < 1
            mongoagents.update({_id: clientname} , {  "$set" => {status: "LOGGEDOUT"}});
         end
       end
+    end  ### End Websocket close
+
+  end  #### End request.websocket 
+end ### End get /websocket
 
 
 
-      #if not more clients are registered, set to not ready
-      if newclientcount < 1
-         userlist[clientname][0] = "LOGGEDOUT"
-         userlist[clientname][1] = Time.now   
-      end
-
-      #remove client count
-
-    end
-  end
-  
-end
-
-
-
-#for incoming voice calls.. not for client to client routing (move that elsewhere)
+#Handle incoming voice calls.. not for client to client routing (move that elsewhere)
 post '/voice' do
 
     sid = params[:CallSid]
     callerid = params[:Caller]  
 
-    if calls[sid] 
-       puts "found sid #{sid} = #{calls[sid]}"
-    else
-       puts "creating sid #{sid}"
-       calls[sid] = {}
-    end 
-   
-
     bestclient = getlongestidle(userlist, true, mongoagents)
-      if bestclient == "NoReadyAgents"  
+    if bestclient == "NoReadyAgents"  
           dialqueue = qname
-      else
-          puts "Found best client! #{bestclient}"
+    else
+          logger.debug("Routing incomming voice call to best agent = #{bestclient}")
           client_name = bestclient
-      end 
+    end 
 
     #if no client is choosen, route to queue
     response = Twilio::TwiML::Response.new do |r|  
-
-        if dialqueue  #no agents avalible
+        if dialqueue  #If this variable is set, we have no agents to route to
             r.Say("Please wait for the next availible agent ")
             r.Enqueue(dialqueue)
-            #r.Redirect('/wait')
         else      #send to best agent   
             r.Dial(:timeout=>"10", :action=>"/handleDialCallStatus", :callerId => callerid)  do |d|
-                puts "dialing client #{client_name}"
-                calls[sid][:agent] = client_name
-                calls[sid][:status] = "Ringing" 
+                logger.debug("dialing client #{client_name}")
+
                 agentinfo = { _id: sid, agent: client_name, status: "Ringing" }
                 sidinsert = mongocalls.update({_id: sid},  agentinfo, {upsert: true})
-                puts "inserted #{sidinsert}"
 
                 d.Client client_name   
             end
         end
     end
-    puts "response text = #{response.text}"
+    logger.debug("Response text for /voice post = #{response.text}")
     response.text
 end
 
 
+## this is called after an agent is sent a call - if an agent has missed a call change their status in the database
 post '/handleDialCallStatus' do
-
-  puts "HANDLEDIALCALLSTATUS params = #{params}"
-  #todo - log this info?
-  #rules - if you dialed a client, and the response is "no-answer", set client to not ready.
-    # 
   sid = params[:CallSid]
 
   mongosidinfo = {}
-
-  mongosidinfo = mongocalls.find_one ({_id: sid})
-  puts "mongosidinfo = #{mongosidinfo} "
+  mongosidinfo = mongocalls.find_one ({_id: sid}) 
   
+  ## need to more safely access this array element
   mongoagent = mongosidinfo["agent"]
-  puts "agent for this sid = #{mongoagent}"
-
+  logger.debug("Agent for this sid = #{mongoagent}")
 
   response = Twilio::TwiML::Response.new do |r| 
-
-      #consider logging all of this?
       if params['DialCallStatus'] == "no-answer"
-        #if a call got here when ringing a client, they didn't answer.  set values
-        calls[sid][:status] = "Missed"
+        ## Change agent status for agents that missed calls
         mongocalls.update({_id: sid}, { "$set" => {status:  "Missed"}}, {upsert: false})
-
-
-        agent = calls[sid][:agent]
-
-        puts calls # {"CAcb90adcb68b6e51b96d8216d105ff645"=>{:client=>"defaultclient", :status=>"Ringing", "status"=>"Missed"}}
-        # now, since this client missed a call, set him to paused, and send a websocket message?
-        userlist[agent][0] = "Missed"
-        puts "user list = #{userlist}"
-
         r.Redirect('/voice')
-      else
-        r.Hangup
       end
   end
-  puts "response.text  = #{response.text}"
+  logger.debug("response.text  = #{response.text}")
   response.text
-
 end
 
 
-
+## This is called when agents click2dial - the  /dial url is configured in the Twilio application id for the app
 post '/dial' do
     number = params[:PhoneNumber]
     client_name = params[:client]
@@ -389,34 +296,16 @@ end
 ### ACD stuff - for tracking agent state
 #should prob change this to a post, as it is updating parameters
 get '/track' do
-    activeusers = 0
     from = params[:from]
     status = params[:status]
-    currentclientcount = 0
 
-
-
-    #check if this guy is already registered as a client from another webpage
-    if userlist.has_key?(from)
-      currentclientcount = userlist[from][2] 
-    end 
-
-    #update the userlist{} status.. this is now his status
-    puts "For client #{from} retrieved currentclientcount = #{currentclientcount} and setting status to #{status}"
-
-    userlist[from] = [status, Time.now.to_f, currentclientcount ]
-
-    #mongostuff
+    logger.debug("For client #{from} settings status to #{status}")
     mongoagents.update({_id: from} , { "$set" =>   {status: status,readytime: Time.now.to_f  }})
-
-  
 end
 
 get '/status' do
     #returns status for a particular client
     from = params[:from]
-    p "from #{from}"
-
     #mongo stuff
     agentstatus = mongoagents.find_one ({_id: from})
     if agentstatus
@@ -426,21 +315,10 @@ get '/status' do
     end
 
     return agentstatus
-
-
-
-
-    if userlist.has_key?(from)
-      status = userlist[from].first  
-      p "status = #{status}"
-    else
-      status ="no status"
-    end
-    return status
 end
 
  
-
+##probably delete this, won't do passing attached data in this example
 get '/calldata' do 
     #sid will be a client call, need to get parent for attached data
     sid = params[:CallSid]
@@ -454,62 +332,28 @@ get '/calldata' do
 
     calldata = calls[@call.parent_call_sid]
 
-    #puts "calls sid = #{calls[sid]}"
-    
-
     if calls[parentsid]
       msg =  { :agentname => calldata[:agent], :agentstatus => calldata[:status]}.to_json
     else
       msg = "NoSID"
     end
-
     return msg 
-
 end 
 
-
+#gets all "Ready" agents, sorts by longest idle 
 def getlongestidle (userlist, callrouting, mongoagents) 
-      #gets all "Ready" agents, sorts by longest idle 
 
-
-   #yea! replace whole function with one line of mongo.
-   #"$or" => [ {status: "Ready"}]
    mongoreadyagent =  mongoagents.find_one( { "$query" => { "$or" => [ {status: "Ready"}, status: "DeQueing"] } , "$orderby" => {readytime: 1}  } )
-   puts "mongoreadyagent = #{mongoreadyagent}"
-   mongolongestidleagent = ""
 
+   mongolongestidleagent = ""
    if mongoreadyagent
       mongolongestidleagent = mongoreadyagent["_id"]
-   end
-
-   puts "mongolongestidleagent = #{mongolongestidleagent}"
-
-
-   readyusers = userlist.clone  #don't 
-
-
-   #if callrouting ==true, we are ready to send the call to this agent, even if it is dequring
-   if callrouting == true
-     readyusers.keep_if {|key, value|
-          value[0] == "Ready" || value[0] == "DeQueing"
-      }
    else
-    readyusers.keep_if {|key, value|
-          value[0] == "Ready"
-      }
-   end
+      mongolongestidleagent = "NoReadyAgents" 
+   end 
 
-    if readyusers.count < 1 
-      return "NoReadyAgents" 
-    end
-
-    sorted = readyusers.sort_by { |x|
-          x[1]
-          #sorts by idle time, {"sam" => ["Ready", 124444]}
-    }
-
-    longestidleagent = sorted.first[0]   #first element of first array is name of user
-    return longestidleagent 
+   puts("mongolongestidleagent = #{mongolongestidleagent}")
+   return mongolongestidleagent
 
 end
 
