@@ -9,7 +9,7 @@ require 'logger'
 logger = Logger.new(STDOUT)
 logger.level = Logger::DEBUG  #change to to get log level input from configuration
 
-giset :sockets, [] 
+set :sockets, [] 
 disable :protection  #necessary for ajax requests from a diffirent domain (like a SFDC iframe)
 
 #global vars
@@ -25,7 +25,7 @@ qname = ENV['twilio_queue_name']
 dqueueurl = ENV['twilio_dqueue_url']
 
 
-# put your default Twilio Client name here, for when a phone number isn't given
+# Default client - we expect this to
 default_client =  "default_client"
 
 @client = Twilio::REST::Client.new(account_sid, auth_token)
