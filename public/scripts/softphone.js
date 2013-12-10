@@ -228,7 +228,9 @@ $(function() {
       var inboundnum = cleanInboundTwilioNumber(conn.parameters.From);
       var sid = conn.parameters.CallSid
       var result = "";
+      sforce.interaction.searchAndScreenPop(inboundnum, 'con10=' + inboundnum + '&con12=' + inboundnum + '&name_firstcon2=' + name,'inbound');
 
+      /*
       $.get("/calldata", { "CallSid":sid}, function(data) {
 
           result = JSON.parse(data);
@@ -242,9 +244,8 @@ $(function() {
           SP.functions.showCallData(callData);
           var name = result.requestor_name  || "";
 
-          sforce.interaction.searchAndScreenPop(inboundnum, 'con10=' + inboundnum + '&con12=' + inboundnum + '&name_firstcon2=' + name,'inbound');
-
       }); 
+      */
 
 
       
