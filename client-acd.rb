@@ -23,22 +23,34 @@ app_id =  ENV['twilio_app_id']
 caller_id = ENV['twilio_caller_id']  #number your agents will click2dialfrom
 qname = ENV['twilio_queue_name']
 dqueueurl = ENV['twilio_dqueue_url']
+mongohqdbstring = ENV['MONGOHQ_URL']
 
 
-# Default client - we expect this to
-default_client =  "default_client"
+########### DB Setup  ###################
+configure do
+  db = URI.parse(mongohqdbstring)
+  db_name = db.path.gsub(/^\//, '')   
+  @conn = Mongo::Connection.new(db.host, db.port).db(db_name)
+  @conn.authenticate(db.user, db.password) unless (db.user.nil? || db.user.nil?)
+  set :mongo_connection, @conn
+end
+# agents will be stored in 'agents' collection
+mongoagents = settings.mongo_connection['agents']
+mongocalls = settings.mongo_connection['calls']
 
+##### end of db config #######
+
+
+################ TWILLO CONFIG ################
+
+#Twilio rest client
 @client = Twilio::REST::Client.new(account_sid, auth_token)
 
-
-################ ACCOUNTS ################
-
-# shortcut to grab your account object (account_sid is inferred from the client's auth credentials)
 @account = @client.account
 @queues = @account.queues.list
 
-## Queue setup:
-# qname is a configuration vairable, but we need the queueid for this queue
+##### Twilio Queue setup:####
+# qname is a configuration vairable, but we need the queueid for this queue (we should have a helper method for this!!)
 queueid = nil
 @queues.each do |q|
   logger.debug("Queue for this account = #{q.friendly_name}")
@@ -57,20 +69,12 @@ end
 
 logger.info("Calls will be queued to queueid = #{queueid}")
 queue1 = @account.queues.get(queueid)
+
+## used when a 
+default_client =  "default_client"
+
 ######### End of queue setup
 
-##### Database setup  ###########
-include Mongo
-
-configure do
-  conn = MongoClient.new("localhost", 27017)
-  set :mongo_connection, conn
-  set :mongo_db, conn.db('test')
-end
-# agents will be stored in 'agents' collection
-mongoagents = settings.mongo_db['agents']
-mongocalls = settings.mongo_db['calls']
-##### end of db config
 
 
 
@@ -101,7 +105,7 @@ get '/token' do
   return token
 end 
   
-## Accepts a inbound websocket connection. Connection will be used to send messages to the browser, and detect disconnects
+## WEBSOCKETS: Accepts a inbound websocket connection. Connection will be used to send messages to the browser, and detect disconnects
 # 1. creates or updates agent in the db, and tracks how many broswers are connected with the "currentclientcount" parameter
 # 2. changes agent status to "LOGGEDOUT" if no browsers are connected so we don't try to send calls to a non connected browser
 

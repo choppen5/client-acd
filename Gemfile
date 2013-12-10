@@ -3,4 +3,4 @@ gem 'sinatra'
 gem 'twilio-ruby'
 gem 'json'
 gem 'sinatra-websocket'
-
+gem 'mongo'

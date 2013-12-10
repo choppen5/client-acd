@@ -2,6 +2,7 @@ GEM
   remote: http://rubygems.org/
   specs:
     addressable (2.3.5)
+    bson (1.9.2)
     builder (3.2.0)
     daemons (1.1.4)
     em-websocket (0.3.8)
@@ -11,6 +12,8 @@ GEM
     json (1.8.0)
     jwt (0.1.6)
       multi_json (>= 1.0)
+    mongo (1.9.2)
+      bson (~> 1.9.2)
     multi_json (1.6.1)
     rack (1.5.2)
     rack-protection (1.4.0)
@@ -38,6 +41,7 @@ PLATFORMS
 
 DEPENDENCIES
   json
+  mongo
   sinatra
   sinatra-websocket
   twilio-ruby
