@@ -3,6 +3,8 @@ GEM
   specs:
     addressable (2.3.5)
     bson (1.9.2)
+    bson_ext (1.9.2)
+      bson (~> 1.9.2)
     builder (3.2.0)
     daemons (1.1.4)
     em-websocket (0.3.8)
@@ -41,6 +43,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bson_ext
   json
   mongo
   newrelic_rpm

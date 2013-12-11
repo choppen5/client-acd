@@ -256,8 +256,6 @@ post '/track' do
 
     #update clients with new info, route calls if any
     getqueueinfo(mongoagents, queue1, logger, queueid, account)
-
-
 end
 
 ### /status returns status for a particular client.  Ajax clients query the server in certain cases to get their status
@@ -304,9 +302,7 @@ end
 def getqueueinfo (mongoagents, queue1, logger, queueid, account)
 
      $sum += 1  
-     qsize = 0
-     
-      
+     qsize = 0  
      @members = queue1.members
      topmember =  @members.list.first 
 
