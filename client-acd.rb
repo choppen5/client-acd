@@ -221,12 +221,13 @@ end
 # This method will be called when a client clicks
 
 post '/dial' do
+    puts "Params for dial = #{params}"
     number = params[:PhoneNumber]
 
     response = Twilio::TwiML::Response.new do |r|
         # outboudn dialing (from client) must have a :callerId    
         r.Dial :callerId => caller_id do |d|
-                d.Number
+          d.Number number
         end
     end
     response.text
