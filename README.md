@@ -51,8 +51,7 @@ To deploy to Heroku:
  
 - Install MongoHQ:
  heroku addons:add mongohq
- ( This will produce a url for mongo such as "mongodb://heroku:762d44203xxxx@servername.mongohq.com:10008/app1111111 - you can use the URL locally too)
- 
+ ( This will produce a url for mongo such as "mongodb://heroku:762d44203xxxx@servername.mongohq.com:10008/app1111111 - you can use the URL locally too) 
  
  - set the env variables on 
 

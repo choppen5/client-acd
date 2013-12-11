@@ -17,7 +17,6 @@ GEM
     mongo (1.9.2)
       bson (~> 1.9.2)
     multi_json (1.6.1)
-    newrelic_rpm (3.7.0.177)
     rack (1.5.2)
     rack-protection (1.4.0)
       rack
@@ -46,7 +45,6 @@ DEPENDENCIES
   bson_ext
   json
   mongo
-  newrelic_rpm
   sinatra
   sinatra-websocket
   twilio-ruby
