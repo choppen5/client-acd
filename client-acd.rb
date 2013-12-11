@@ -146,7 +146,13 @@ get '/websocket' do
            mongoagents.update({_id: clientname} , {  "$set" => {status: "LOGGEDOUT"}});
         end
       end
+
+        #update status, route any calls
+        getqueueinfo(mongoagents, queue1, logger)
+
     end  ### End Websocket close
+
+
 
   end  #### End request.websocket 
 end ### End get /websocket
@@ -189,6 +195,8 @@ post '/voice' do
         end
     end
     logger.debug("Response text for /voice post = #{response.text}")
+    #update clients with new info, route calls if any
+    getqueueinfo(mongoagents, queue1, logger)
     response.text
 end
 
@@ -244,6 +252,11 @@ post '/track' do
 
     logger.debug("For client #{from} settings status to #{status}")
     mongoagents.update({_id: from} , { "$set" =>   {status: status,readytime: Time.now.to_f  }})
+
+    #update clients with new info, route calls if any
+    getqueueinfo(mongoagents, queue1, logger)
+
+
 end
 
 ### /status returns status for a particular client.  Ajax clients query the server in certain cases to get their status
@@ -285,12 +298,10 @@ def getlongestidle (callrouting, mongoagents)
 
 end
 
-#Starting ACD (Automatic Call Distribution) processing thread
-#This logic loops through the queue on interval, checks for calls in queue, and .dequeus the url 
 
-Thread.new do 
-  while true do
-     sleep(2.0/2.0)
+## function that gets current queue size, routes call if availible, and updates websocket clients with new info
+def getqueueinfo (mongoagents, queue1, logger)
+
      $sum += 1  
      qsize = 0
      
@@ -323,8 +334,12 @@ Thread.new do
         s.send(msg) 
       } 
      logger.debug("run = #{$sum} #{Time.now} qsize = #{qsize} readyagents = #{readycount}")
-  end
+     return {:quesize => qsize,  :readyagents => readycount }
+
 end
 
-Thread.abort_on_exception = true
+
+
+
+
 
