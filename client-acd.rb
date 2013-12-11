@@ -290,7 +290,7 @@ end
 
 Thread.new do 
   while true do
-     sleep(1.0/2.0)
+     sleep(2.0/2.0)
      $sum += 1  
      qsize = 0
      
