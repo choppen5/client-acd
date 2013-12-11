@@ -51,12 +51,14 @@ To deploy to Heroku:
  
 - Install MongoHQ:
  heroku addons:add mongohq
- ( This will produce a url for mongo such as "mongodb://heroku:762d44203xxxx@servername.mongohq.com:10008/app1111111 - you can use the URL locally too) 
- 
- - set the env variables on 
+ ( This will produce a url for mongo such as "mongodb://heroku:762d44203xxxx@servername.mongohq.com:10008/app1111111 - you can use the URL locally too)
+  
 
-You can set ALL the environment variables with this command (replace with your auth tokens etc):
-	
+
+You can set ALL the environment variables with this command 
+(replace with your auth tokens etc):
+
+heroku config:set twilio_account_sid=AC11ecc09xxxxxx   twilio_account_token=2ad0fb4ab2xxxxxxxxxxxxx twilio_app_id=APab79b652xxxxxxxxx twilio_caller_id=+14156xxxxx twilio_queue_name=CustomerService twilio_dqueue_url=https://me.herokuapp.com/voice	
 
 
 ### Salesforce configuration
