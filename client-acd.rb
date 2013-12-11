@@ -46,8 +46,8 @@ mongocalls = settings.mongo_connection['calls']
 #Twilio rest client
 @client = Twilio::REST::Client.new(account_sid, auth_token)
 
-@account = @client.account
-@queues = @account.queues.list
+account = @client.account
+@queues = account.queues.list
 
 ##### Twilio Queue setup:####
 # qname is a configuration vairable, but we need the queueid for this queue (we should have a helper method for this!!)
@@ -62,19 +62,20 @@ end
 
 unless queueid
   #didn't find qname, create it
-  @queue = @account.queues.create(:friendly_name => qname)
+  @queue = account.queues.create(:friendly_name => qname)
   logger.info("Created queue #{qname}")
   queueid = @queue.sid
 end
 
 logger.info("Calls will be queued to queueid = #{queueid}")
-queue1 = @account.queues.get(queueid)
+queue1 = account.queues.get(queueid)
 
 ## used when a 
 default_client =  "default_client"
 
 ######### End of queue setup
 
+logger.info("Starting up.. configuration complete")
 
 
 
@@ -148,7 +149,7 @@ get '/websocket' do
       end
 
         #update status, route any calls
-        getqueueinfo(mongoagents, queue1, logger)
+        getqueueinfo(mongoagents, queue1, logger,queueid, account)
 
     end  ### End Websocket close
 
@@ -171,12 +172,12 @@ post '/voice' do
     callerid = params[:Caller]  
 
     bestclient = getlongestidle(true, mongoagents)
-    if bestclient == "NoReadyAgents"  
-          dialqueue = qname
-    else
-          logger.debug("Routing incomming voice call to best agent = #{bestclient}")
-          client_name = bestclient
-    end 
+    if bestclient
+       logger.debug("Routing incomming voice call to best agent = #{bestclient}")
+       client_name = bestclient
+    else 
+       dialqueue = qname
+    end
 
     #if no client is choosen, route to queue
     response = Twilio::TwiML::Response.new do |r|  
@@ -196,7 +197,7 @@ post '/voice' do
     end
     logger.debug("Response text for /voice post = #{response.text}")
     #update clients with new info, route calls if any
-    getqueueinfo(mongoagents, queue1, logger)
+    getqueueinfo(mongoagents, queue1, logger, queueid, account)
     response.text
 end
 
@@ -254,7 +255,7 @@ post '/track' do
     mongoagents.update({_id: from} , { "$set" =>   {status: status,readytime: Time.now.to_f  }})
 
     #update clients with new info, route calls if any
-    getqueueinfo(mongoagents, queue1, logger)
+    getqueueinfo(mongoagents, queue1, logger, queueid, account)
 
 
 end
@@ -292,7 +293,7 @@ def getlongestidle (callrouting, mongoagents)
    if mongoreadyagent
       mongolongestidleagent = mongoreadyagent["_id"]
    else
-      mongolongestidleagent = "NoReadyAgents" 
+      mongolongestidleagent = nil
    end 
    return mongolongestidleagent
 
@@ -300,7 +301,7 @@ end
 
 
 ## function that gets current queue size, routes call if availible, and updates websocket clients with new info
-def getqueueinfo (mongoagents, queue1, logger)
+def getqueueinfo (mongoagents, queue1, logger, queueid, account)
 
      $sum += 1  
      qsize = 0
@@ -317,15 +318,15 @@ def getqueueinfo (mongoagents, queue1, logger)
     
       if topmember #only check for availible agent if there is a caller in queue
         
-        qsize =  @account.queues.get(queueid).current_size
+        qsize =  account.queues.get(queueid).current_size
         bestclient = getlongestidle(false, mongoagents)
-        if bestclient == "NoReadyAgents"  
-          logger.debug("No Ready agents during queue poll # #{$sum}")
-        else
+        if bestclient
           logger.info("Found best client - routing to #{bestclient} - setting agent to DeQueuing status so they aren't sent another call from the queue")
           mongoagents.update({_id: bestclient} , { "$set" =>   {status: "DeQueing" }  } )   
-          topmember.dequeue(dqueueurl)
-        end 
+          topmember.dequeue(ENV['twilio_dqueue_url'])
+        else 
+          logger.debug("No Ready agents during queue poll # #{$sum}")
+        end
       end 
 
       settings.sockets.each{|s| 
