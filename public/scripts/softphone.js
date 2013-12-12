@@ -284,13 +284,13 @@ $(function() {
 
     // Set server-side status to ready / not-ready
     SP.functions.notReady = function() {
-      $.post("/track", { "from":SP.username, "status":"NotReady" }, function(data) {
+      $.get("/track", { "from":SP.username, "status":"NotReady" }, function(data) {
         SP.functions.updateStatus();
       });
     }
 
     SP.functions.ready = function() {
-      $.post("/track", { "from":SP.username, "status":"Ready" }, function(data) {
+      $.get("/track", { "from":SP.username, "status":"Ready" }, function(data) {
           SP.functions.updateStatus();
       });
     }
