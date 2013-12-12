@@ -126,6 +126,10 @@ get '/websocket' do
       settings.sockets << ws     
     end
 
+    ws.onmessage do |msg|
+      puts "got websocket message"
+      EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
+    end
     
     ##websocket close
     ws.onclose do
