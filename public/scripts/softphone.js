@@ -209,7 +209,7 @@ $(function() {
         SP.functions.detachAnswerButton();
 
         //send status info
-        $.get("/track", { "from":SP.username, "status":"OnCall" }, function(data) {
+        $.post("/track", { "from":SP.username, "status":"OnCall" }, function(data) {
             
         });
 
@@ -284,13 +284,13 @@ $(function() {
 
     // Set server-side status to ready / not-ready
     SP.functions.notReady = function() {
-      $.get("/track", { "from":SP.username, "status":"NotReady" }, function(data) {
+      $.post("/track", { "from":SP.username, "status":"NotReady" }, function(data) {
         SP.functions.updateStatus();
       });
     }
 
     SP.functions.ready = function() {
-      $.get("/track", { "from":SP.username, "status":"Ready" }, function(data) {
+      $.post("/track", { "from":SP.username, "status":"Ready" }, function(data) {
           SP.functions.updateStatus();
       });
     }

@@ -251,7 +251,7 @@ end
 # DB will be ajax requests from the browser, such as changing from ready to not ready
 
 ## /track takes a parameter "status" and updates the "from" client sending it
-get '/track' do
+post '/track' do
     from = params[:from]
     status = params[:status]
 
