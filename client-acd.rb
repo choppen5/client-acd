@@ -260,6 +260,7 @@ get '/track' do
 
     #update clients with new info, route calls if any
     getqueueinfo(mongoagents, queue1, logger, queueid, account)
+    return "xx"
 end
 
 ### /status returns status for a particular client.  Ajax clients query the server in certain cases to get their status
