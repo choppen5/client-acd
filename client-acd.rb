@@ -126,10 +126,6 @@ get '/websocket' do
       settings.sockets << ws     
     end
 
-    ws.onmessage do |msg|
-      puts "got websocket message"
-      EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
-    end
     
     ##websocket close
     ws.onclose do
@@ -210,18 +206,20 @@ end
 post '/handledialcallstatus' do
   sid = params[:CallSid]
 
-  mongosidinfo = {}
-  mongosidinfo = mongocalls.find_one ({_id: sid}) 
-  
-  mongoagent = mongosidinfo["agent"]   ## TODO: need to more safely access this array element.. If no agents are returned this will puke.
-  logger.debug("Agent for this sid = #{mongoagent}")
+  if params['DialCallStatus'] == "no-answer"
+    mongosidinfo = {}
+    mongosidinfo = mongocalls.find_one ({_id: sid})
+    mongoagent = mongosidinfo["agent"]   ## TODO: need to more safely access this array element.. If no agents are returned this will puke.
+    mongoagents.update({_id: mongoagent}, { "$set" => {status:  "Missed"}}, {upsert: false})
+    #logger.debug("Agent for this sid = #{mongoagent}")
+    #mongocalls.update({_id: sid}, { "$set" => {status:  "Missed"}}, {upsert: false})
+  end 
 
   response = Twilio::TwiML::Response.new do |r| 
-      if params['DialCallStatus'] == "no-answer"
+      
         ## Change agent status for agents that missed calls
-        mongocalls.update({_id: sid}, { "$set" => {status:  "Missed"}}, {upsert: false})
         r.Redirect('/voice')
-      end
+    
   end
   logger.debug("response.text  = #{response.text}")
   response.text
