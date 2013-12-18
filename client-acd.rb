@@ -68,7 +68,6 @@ unless queueid
 end
 
 logger.info("Calls will be queued to queueid = #{queueid}")
-queue1 = account.queues.get(queueid)
 
 ## used when a 
 default_client =  "default_client"
@@ -149,7 +148,7 @@ get '/websocket' do
       end
 
         #update status, route any calls
-        getqueueinfo(mongoagents, queue1, logger,queueid, account)
+        getqueueinfo(mongoagents, logger,queueid, 0)
 
     end  ### End Websocket close
 
@@ -170,6 +169,7 @@ post '/voice' do
 
     sid = params[:CallSid]
     callerid = params[:Caller]  
+    addtoq = 0
 
     bestclient = getlongestidle(true, mongoagents)
     if bestclient
@@ -182,6 +182,7 @@ post '/voice' do
     #if no client is choosen, route to queue
     response = Twilio::TwiML::Response.new do |r|  
         if dialqueue  #If this variable is set, we have no agents to route to
+            addtoq = 1
             r.Say("Please wait for the next availible agent ")
             r.Enqueue(dialqueue)
         else      #send to best agent   
@@ -197,7 +198,7 @@ post '/voice' do
     end
     logger.debug("Response text for /voice post = #{response.text}")
     #update clients with new info, route calls if any
-    getqueueinfo(mongoagents, queue1, logger, queueid, account)
+    getqueueinfo(mongoagents,logger, queueid, addtoq)
     response.text
 end
 
@@ -206,7 +207,7 @@ end
 post '/handledialcallstatus' do
   sid = params[:CallSid]
 
-  if params['DialCallStatus'] == "now-answer"
+  if params['DialCallStatus'] == "no-answer"
     mongosidinfo = {}
     mongosidinfo = mongocalls.find_one ({_id: sid})
     mongoagent = mongosidinfo["agent"]   ## TODO: need to more safely access this array element.. If no agents are returned this will puke.
@@ -259,7 +260,7 @@ post '/track' do
     mongoagents.update({_id: from} , { "$set" =>   {status: status,readytime: Time.now.to_f  }})
 
     #update clients with new info, route calls if any
-    getqueueinfo(mongoagents, queue1, logger, queueid, account)
+    getqueueinfo(mongoagents,logger, queueid, 0)
     return ""
 end
 
@@ -304,22 +305,35 @@ end
 
 
 ## function that gets current queue size, routes call if availible, and updates websocket clients with new info
-def getqueueinfo (mongoagents, queue1, logger, queueid, account)
+def getqueueinfo (mongoagents,logger, queueid, addtoq)
 
      $sum += 1  
      qsize = 0  
+     account_sid = ENV['twilio_account_sid']
+     auth_token =  ENV['twilio_account_token']
+     qname = ENV['twilio_queue_name']
+
+     #reinitialize client every time?? Otherwise current_size fails 
+     @client = Twilio::REST::Client.new(account_sid, auth_token)
+ 
+     account = @client.account
+     queue1 = account.queues.get(queueid)
+     qsize =  account.queues.get(queueid).current_size + addtoq
+
+
      @members = queue1.members
      topmember =  @members.list.first 
 
      mongoreadyagents = mongoagents.find({ status: "Ready"}).count()
      readycount = mongoreadyagents || 0
      
+     
      #print out all ready agents in debug mode
      logger.debug(mongoagents.find.to_a)
     
       if topmember #only check for availible agent if there is a caller in queue
         
-        qsize =  account.queues.get(queueid).current_size
+        #
         bestclient = getlongestidle(false, mongoagents)
         if bestclient
           logger.info("Found best client - routing to #{bestclient} - setting agent to DeQueuing status so they aren't sent another call from the queue")

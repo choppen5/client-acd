@@ -12,36 +12,50 @@ $(function() {
 
     SP.functions = {};
 
-    
-    SP.functions.getSFDCUserInfo = function () {
-      
-          var callback = function (response) {
-              if (response.result) {
-                console.log("result = " + response.result);
-                var useresult = response.result;
-                useresult = useresult.replace("@", "AT");
-                useresult = useresult.replace(".", "DOT");
-                SP.username = useresult;
-
-              } else {
-                console.log("error = " + response.error);
-              
-              }
-
-              //TODO: need a way to get here when not inside Salesforce - this is only called in the runApex callback.
-              $.get("/token", {"client":SP.username}, function (token) {
-                    //alert("got token=" + token);
-                    Twilio.Device.setup(token, {debug: true});
-              });
-
-              SP.functions.startWebSocket();
-          };
+        // Get a Twilio Client name and register with Twilio
+    SP.functions.getTwilioClientName = function(sfdcResponse) {
+        sforce.interaction.runApex('UserInfo', 'getUserName', '' , SP.functions.registerTwilioClient);
+    }
 
 
-              //how  can we tell if sforce works before calling this?
-             sforce.interaction.runApex('UserInfo', 'getUserName', '' ,callback);
+    SP.functions.registerTwilioClient = function(response) {
 
-       
+      console.log("Registering with client name: " + response.result);
+
+      // Twilio does not accept special characters in Client names
+      var useresult = response.result;
+      useresult = useresult.replace("@", "AT");
+      useresult = useresult.replace(".", "DOT");
+      SP.username = useresult;
+      console.log("useresult = " + useresult);
+
+      $.get("/token", {"client":SP.username}, function (token) {
+          Twilio.Device.setup(token, {debug: true});
+      });
+
+      SP.functions.startWebSocket();
+
+
+    }
+
+
+    SP.functions.startWebSocket = function() {
+      // ** Agent Presence Stuff ** //
+      console.log(".startWebSocket...");
+     var wsaddress = 'wss://' + window.location.host  + "/websocket?clientname=" + SP.username
+
+     var ws = new WebSocket(wsaddress);
+      ws.onopen    = function()  { console.log('websocket opened'); };
+      ws.onclose   = function()  { console.log('websocket closed'); }
+      ws.onmessage = function(m) { 
+        console.log('websocket message: ' +  m.data);
+        
+        var result = JSON.parse(m.data);
+
+        $("#team-status > .queues-status").text("Call Queue:  " + result.queuesize);
+        $("#team-status > .agents-status").text("Ready Agents:  " + result.readyagents); 
+      };
+
     }
 
 
@@ -150,16 +164,19 @@ $(function() {
 
       $("#agent-status-controls > button.userinfo").click( function( ) {
 
-      SP.functions.getSFDCUserInfo();
+
     });
 
 
 
     // ** Twilio Client Stuff ** //
+    // first register outside of sfdc
+    var defaultclient = {}
+    defaultclient.result = "name@example.org";
+    SP.functions.registerTwilioClient(defaultclient);
 
-    // get username, generate token, set up device with token. callbacks bitch.
-    SP.functions.getSFDCUserInfo();
-    
+    //this will only be called inside of salesforce
+    sforce.interaction.isInConsole(SP.functions.getTwilioClientName);   
 
     
 
