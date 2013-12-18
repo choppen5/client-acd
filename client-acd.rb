@@ -318,7 +318,13 @@ def getqueueinfo (mongoagents,logger, queueid, addtoq)
  
      account = @client.account
      queue1 = account.queues.get(queueid)
-     qsize =  account.queues.get(queueid).current_size + addtoq
+     qsize =  account.queues.get(queueid).current_size
+     logger.debug("checking queue, got queue size = #{qsize}, addtoq = #{addtoq}")
+     qsize = qsize + addtoq
+     logger.debug("new qsize = #{qsize}")
+
+
+    
 
 
      @members = queue1.members
