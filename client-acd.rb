@@ -206,21 +206,23 @@ end
 post '/handledialcallstatus' do
   sid = params[:CallSid]
 
-  if params['DialCallStatus'] == "no-answer"
+  if params['DialCallStatus'] == "now-answer"
     mongosidinfo = {}
     mongosidinfo = mongocalls.find_one ({_id: sid})
     mongoagent = mongosidinfo["agent"]   ## TODO: need to more safely access this array element.. If no agents are returned this will puke.
     mongoagents.update({_id: mongoagent}, { "$set" => {status:  "Missed"}}, {upsert: false})
-    #logger.debug("Agent for this sid = #{mongoagent}")
-    #mongocalls.update({_id: sid}, { "$set" => {status:  "Missed"}}, {upsert: false})
-  end 
-
-  response = Twilio::TwiML::Response.new do |r| 
-      
+ 
+    response = Twilio::TwiML::Response.new do |r| 
         ## Change agent status for agents that missed calls
         r.Redirect('/voice')
-    
+    end
+  else
+    response = Twilio::TwiML::Response.new do |r| 
+        ## Change agent status for agents that missed calls
+        r.Hangup
+    end
   end
+
   logger.debug("response.text  = #{response.text}")
   response.text
 end

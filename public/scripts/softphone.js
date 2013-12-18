@@ -103,16 +103,22 @@ $(function() {
     SP.functions.updateAgentStatusText = function(statusCategory, statusText) {
 
       if (statusCategory == "ready") {
+           $("#agent-status-controls > button.ready").prop("disabled",true); 
+           $("#agent-status-controls > button.not-ready").prop("disabled",false); 
            $("#agent-status").removeClass();
            $("#agent-status").addClass("ready");
        }
 
       if (statusCategory == "notReady") {
+           $("#agent-status-controls > button.ready").prop("disabled",false); 
+           $("#agent-status-controls > button.not-ready").prop("disabled",true); 
            $("#agent-status").removeClass();
            $("#agent-status").addClass("not-ready");
       }
 
       if (statusCategory == "onCall") {
+          $("#agent-status-controls > button.ready").prop("disabled",true); 
+          $("#agent-status-controls > button.not-ready").prop("disabled",true); 
           $("#agent-status").removeClass();
           $("#agent-status").addClass("on-call");
       }
@@ -133,14 +139,17 @@ $(function() {
 
     // Wire the ready / not ready buttons up to the server-side status change functions
     $("#agent-status-controls > button.ready").click( function( ) {
+      $("#agent-status-controls > button.ready").prop("disabled",true); 
       SP.functions.ready();
     });
 
     $("#agent-status-controls > button.not-ready").click( function( ) {
+      $("#agent-status-controls > button.not-ready").prop("disabled",true); 
       SP.functions.notReady();
     });
 
       $("#agent-status-controls > button.userinfo").click( function( ) {
+
       SP.functions.getSFDCUserInfo();
     });
 
@@ -290,8 +299,10 @@ $(function() {
     }
 
     SP.functions.ready = function() {
+
       $.post("/track", { "from":SP.username, "status":"Ready" }, function(data) {
           SP.functions.updateStatus();
+
       });
     }
 
