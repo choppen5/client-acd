@@ -296,26 +296,6 @@ $(function() {
 
 
 
-    SP.functions.startWebSocket = function() {
-      // ** Agent Presence Stuff ** //
-      console.log(".startWebSocket...");
-     var wsaddress = 'wss://' + window.location.host  + "/websocket?clientname=" + SP.username
-
-     var ws = new WebSocket(wsaddress);
-      ws.onopen    = function()  { console.log('websocket opened'); };
-      ws.onclose   = function()  { console.log('websocket closed'); }
-      ws.onmessage = function(m) { 
-        console.log('websocket message: ' +  m.data);
-        
-        var result = JSON.parse(m.data);
-
-        $("#team-status > .queues-status").text("Call Queue:  " + result.queuesize);
-        $("#team-status > .agents-status").text("Ready Agents:  " + result.readyagents); 
-      };
-
-    }
-
-
     // Set server-side status to ready / not-ready
     SP.functions.notReady = function() {
       $.post("/track", { "from":SP.username, "status":"NotReady" }, function(data) {
