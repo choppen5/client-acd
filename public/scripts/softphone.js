@@ -171,12 +171,20 @@ $(function() {
 
     // ** Twilio Client Stuff ** //
     // first register outside of sfdc
-    var defaultclient = {}
-    defaultclient.result = "name@example.org";
-    SP.functions.registerTwilioClient(defaultclient);
 
+
+    if ( window.self === window.top ) {  
+          console.log("Not in an iframe, assume we are using default client");
+          var defaultclient = {}
+          defaultclient.result = "name@example.org";
+          SP.functions.registerTwilioClient(defaultclient);
+      } else 
+      {
+        console.log("In an iframe, assume it is Salesforce");
+        sforce.interaction.isInConsole(SP.functions.getTwilioClientName);   
+      }
     //this will only be called inside of salesforce
-    sforce.interaction.isInConsole(SP.functions.getTwilioClientName);   
+    
 
     
 
