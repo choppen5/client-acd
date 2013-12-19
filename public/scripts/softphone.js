@@ -49,9 +49,9 @@ $(function() {
         ws.onopen    = function()  { 
           console.log('websocket opened');
           setInterval(function() {
-            if (ws.bufferedAmount == 0)
+           
               ws.send("Keep alive from client"  );
-            }, 30000 );
+            }, 1000 );
        };
       ws.onclose   = function()  { console.log('websocket closed'); }
       ws.onmessage = function(m) { 
