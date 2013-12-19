@@ -50,7 +50,7 @@ $(function() {
           console.log('websocket opened');
           setInterval(function() {
               ws.send("Keep alive from client");
-            }, 30000 );
+            }, 5000 );
        };
       ws.onclose   = function()  { console.log('websocket closed'); }
       ws.onmessage = function(m) { 
