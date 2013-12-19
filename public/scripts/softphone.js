@@ -45,7 +45,14 @@ $(function() {
      var wsaddress = 'ws://' + window.location.host  + "/websocket?clientname=" + SP.username
 
      var ws = new WebSocket(wsaddress);
-      ws.onopen    = function()  { console.log('websocket opened'); };
+        
+        ws.onopen    = function()  { 
+          console.log('websocket opened');
+          setInterval(function() {
+            if (ws.bufferedAmount == 0)
+              ws.send("Keep alive from client " + SP.username);
+            }, 30000 );
+       };
       ws.onclose   = function()  { console.log('websocket closed'); }
       ws.onmessage = function(m) { 
         console.log('websocket message: ' +  m.data);
@@ -262,28 +269,8 @@ $(function() {
       var inboundnum = cleanInboundTwilioNumber(conn.parameters.From);
       var sid = conn.parameters.CallSid
       var result = "";
+      //sfdc screenpop fields are specific to new contact screenpop
       sforce.interaction.searchAndScreenPop(inboundnum, 'con10=' + inboundnum + '&con12=' + inboundnum + '&name_firstcon2=' + name,'inbound');
-
-      /*
-      $.get("/calldata", { "CallSid":sid}, function(data) {
-
-          result = JSON.parse(data);
-          result.caller
-
-          callData = {}
-          callData.callerName = result.requestor_name;
-          callData.callerNumber = conn.parameters.From;
-          callData.callerQueue = result.queue_name;
-          callData.callerMessage = result.message;
-          SP.functions.showCallData(callData);
-          var name = result.requestor_name  || "";
-
-      }); 
-      */
-
-
-      
-   
 
     });
 

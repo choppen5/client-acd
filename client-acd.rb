@@ -125,6 +125,10 @@ get '/websocket' do
       settings.sockets << ws     
     end
 
+    ws.onmessage do |msg|
+      logger.debug("Received websocket message:  #{msg}");
+    end
+
     
     ##websocket close
     ws.onclose do
@@ -317,16 +321,8 @@ def getqueueinfo (mongoagents,logger, queueid, addtoq)
      @client = Twilio::REST::Client.new(account_sid, auth_token)
  
      account = @client.account
+
      queue1 = account.queues.get(queueid)
-     qsize =  account.queues.get(queueid).current_size
-     logger.debug("checking queue, got queue size = #{qsize}, addtoq = #{addtoq}")
-     qsize = qsize + addtoq
-     logger.debug("new qsize = #{qsize}")
-
-
-    
-
-
      @members = queue1.members
      topmember =  @members.list.first 
 
@@ -349,6 +345,12 @@ def getqueueinfo (mongoagents,logger, queueid, addtoq)
           logger.debug("No Ready agents during queue poll # #{$sum}")
         end
       end 
+
+      qsize =  account.queues.get(queueid).current_size
+      logger.debug("checking queue, got queue size = #{qsize}, addtoq = #{addtoq}")
+      qsize = qsize + addtoq
+      logger.debug("new qsize = #{qsize}")
+
 
       settings.sockets.each{|s| 
         msg =  { :queuesize => qsize, :readyagents => readycount}.to_json
