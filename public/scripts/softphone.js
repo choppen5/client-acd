@@ -42,7 +42,7 @@ $(function() {
     SP.functions.startWebSocket = function() {
       // ** Agent Presence Stuff ** //
       console.log(".startWebSocket...");
-     var wsaddress = 'ws://' + window.location.host  + "/websocket?clientname=" + SP.username
+     var wsaddress = 'wss://' + window.location.host  + "/websocket?clientname=" + SP.username
 
      var ws = new WebSocket(wsaddress);
         
@@ -50,7 +50,7 @@ $(function() {
           console.log('websocket opened');
           setInterval(function() {
             if (ws.bufferedAmount == 0)
-              ws.send("Keep alive from client " + SP.username);
+              ws.send("Keep alive from client"  );
             }, 30000 );
        };
       ws.onclose   = function()  { console.log('websocket closed'); }
