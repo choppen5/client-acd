@@ -45,7 +45,6 @@ mongocalls = settings.mongo_connection['calls']
 
 #Twilio rest client
 @client = Twilio::REST::Client.new(account_sid, auth_token)
-
 account = @client.account
 @queues = account.queues.list
 
@@ -66,6 +65,10 @@ unless queueid
   logger.info("Created queue #{qname}")
   queueid = @queue.sid
 end
+
+## all that work for a queueid... this should be replaced by a help library method!
+queue1 = account.queues.get(queueid)
+
 
 logger.info("Calls will be queued to queueid = #{queueid}")
 
@@ -115,6 +118,7 @@ end
 get '/websocket' do 
 
   request.websocket do |ws|
+    #we use .onopen to identify new clients
     ws.onopen do
       logger.info("New Websocket Connection #{ws.object_id}") 
 
@@ -127,9 +131,9 @@ get '/websocket' do
       settings.sockets << ws     
     end
 
+    #currently don't recieve websocket messages from client 
     ws.onmessage do |msg|
       logger.debug("Received websocket message:  #{msg}")
-      #getqueueinfo(mongoagents,logger, queueid, 0)
     end
 
     
@@ -153,12 +157,7 @@ get '/websocket' do
            mongoagents.update({_id: clientname} , {  "$set" => {status: "LOGGEDOUT"}});
         end
       end
-
-        #update status, route any calls
-        #getqueueinfo(mongoagents, logger,queueid, 0)
-
     end  ### End Websocket close
-
 
 
   end  #### End request.websocket 
@@ -266,8 +265,6 @@ post '/track' do
     logger.debug("For client #{from} settings status to #{status}")
     mongoagents.update({_id: from} , { "$set" =>   {status: status,readytime: Time.now.to_f  }})
 
-    #update clients with new info, route calls if any
-    #getqueueinfo(mongoagents,logger, queueid, 0)
     return ""
 end
 
@@ -280,7 +277,6 @@ get '/status' do
     if agentstatus
        agentstatus = agentstatus["status"]
     end
-    #getqueueinfo(mongoagents,logger, queueid, 0)
     return agentstatus
 end
 
@@ -312,16 +308,11 @@ def getlongestidle (callrouting, mongoagents)
 end
 
 
-## function that gets current queue size, routes call if availible, and updates websocket clients with new info
-#def getqueueinfo (mongoagents,logger, queueid, addtoq)
 
-     #reinitialize client every time?? Otherwise current_size fails 
-     @client = Twilio::REST::Client.new(account_sid, auth_token)
-     account = @client.account
-     queue1 = account.queues.get(queueid)
-
+## Thread that polls to get current queue size, routes call if availible, and updates websocket clients with new info
 Thread.new do 
    while true do
+     sleep(1.0/2)
  
      $sum += 1  
      qsize = 0  
@@ -336,10 +327,6 @@ Thread.new do
      readycount = mongoreadyagents || 0
 
      qsize =  account.queues.get(queueid).current_size
-     #logger.debug("checking queue, got queue size = #{qsize}")
-       
-     #print out all ready agents in debug mode
-     #logger.debug(mongoagents.find.to_a)
     
       if topmember #only check for availible agent if there is a caller in queue
         
