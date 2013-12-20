@@ -312,7 +312,7 @@ end
 ## Thread that polls to get current queue size, routes call if availible, and updates websocket clients with new info
 Thread.new do 
    while true do
-     sleep(1.0/2)
+     sleep(1)
  
      $sum += 1  
      qsize = 0  
