@@ -76,6 +76,9 @@ default_client =  "default_client"
 
 logger.info("Starting up.. configuration complete")
 
+#### thred
+
+
 
 
 ######### Main request Urls #########
@@ -119,14 +122,14 @@ get '/websocket' do
       querystring = ws.request["query"]
       clientname = querystring.split(/\=/)[1]
       logger.info("Client #{clientname} connected from Websockets")
-
       #update database with list of clients
       mongoagents.update({_id: clientname} , { "$set" =>   {status: "LoggingIn",readytime: Time.now.to_f  },  "$inc"  =>  {:currentclientcount => 1}} , {upsert: true})
       settings.sockets << ws     
     end
 
     ws.onmessage do |msg|
-      logger.debug("Received websocket message:  #{msg}");
+      logger.debug("Received websocket message:  #{msg}")
+      #getqueueinfo(mongoagents,logger, queueid, 0)
     end
 
     
@@ -152,7 +155,7 @@ get '/websocket' do
       end
 
         #update status, route any calls
-        getqueueinfo(mongoagents, logger,queueid, 0)
+        #getqueueinfo(mongoagents, logger,queueid, 0)
 
     end  ### End Websocket close
 
@@ -202,7 +205,7 @@ post '/voice' do
     end
     logger.debug("Response text for /voice post = #{response.text}")
     #update clients with new info, route calls if any
-    getqueueinfo(mongoagents,logger, queueid, addtoq)
+    #getqueueinfo(mongoagents,logger, queueid, addtoq)
     response.text
 end
 
@@ -264,7 +267,7 @@ post '/track' do
     mongoagents.update({_id: from} , { "$set" =>   {status: status,readytime: Time.now.to_f  }})
 
     #update clients with new info, route calls if any
-    getqueueinfo(mongoagents,logger, queueid, 0)
+    #getqueueinfo(mongoagents,logger, queueid, 0)
     return ""
 end
 
@@ -277,7 +280,7 @@ get '/status' do
     if agentstatus
        agentstatus = agentstatus["status"]
     end
-    getqueueinfo(mongoagents,logger, queueid, 0)
+    #getqueueinfo(mongoagents,logger, queueid, 0)
     return agentstatus
 end
 
@@ -310,33 +313,36 @@ end
 
 
 ## function that gets current queue size, routes call if availible, and updates websocket clients with new info
-def getqueueinfo (mongoagents,logger, queueid, addtoq)
+#def getqueueinfo (mongoagents,logger, queueid, addtoq)
 
+     #reinitialize client every time?? Otherwise current_size fails 
+     @client = Twilio::REST::Client.new(account_sid, auth_token)
+     account = @client.account
+     queue1 = account.queues.get(queueid)
+
+Thread.new do 
+   while true do
+ 
      $sum += 1  
      qsize = 0  
      account_sid = ENV['twilio_account_sid']
      auth_token =  ENV['twilio_account_token']
      qname = ENV['twilio_queue_name']
 
-     #reinitialize client every time?? Otherwise current_size fails 
-     @client = Twilio::REST::Client.new(account_sid, auth_token)
- 
-     account = @client.account
-
-     queue1 = account.queues.get(queueid)
      @members = queue1.members
      topmember =  @members.list.first 
 
      mongoreadyagents = mongoagents.find({ status: "Ready"}).count()
      readycount = mongoreadyagents || 0
-     
-     
+
+     qsize =  account.queues.get(queueid).current_size
+     #logger.debug("checking queue, got queue size = #{qsize}")
+       
      #print out all ready agents in debug mode
-     logger.debug(mongoagents.find.to_a)
+     #logger.debug(mongoagents.find.to_a)
     
       if topmember #only check for availible agent if there is a caller in queue
         
-        #
         bestclient = getlongestidle(false, mongoagents)
         if bestclient
           logger.info("Found best client - routing to #{bestclient} - setting agent to DeQueuing status so they aren't sent another call from the queue")
@@ -347,24 +353,13 @@ def getqueueinfo (mongoagents,logger, queueid, addtoq)
         end
       end 
 
-      qsize =  account.queues.get(queueid).current_size
-      logger.debug("checking queue, got queue size = #{qsize}, addtoq = #{addtoq}")
-      qsize = qsize + addtoq
-      logger.debug("new qsize = #{qsize}")
-
-
       settings.sockets.each{|s| 
         msg =  { :queuesize => qsize, :readyagents => readycount}.to_json
         logger.debug("Sending webocket #{msg}");
         s.send(msg) 
       } 
      logger.debug("run = #{$sum} #{Time.now} qsize = #{qsize} readyagents = #{readycount}")
-     return {:quesize => qsize,  :readyagents => readycount }
-
+  end
 end
 
-
-
-
-
-
+Thread.abort_on_exception = true
