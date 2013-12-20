@@ -277,7 +277,7 @@ get '/status' do
     if agentstatus
        agentstatus = agentstatus["status"]
     end
-
+    getqueueinfo(mongoagents,logger, queueid, 0)
     return agentstatus
 end
 
