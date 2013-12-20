@@ -278,6 +278,7 @@ $(function() {
         SP.functions.detachAnswerButton();
         SP.functions.hideCallData();
         SP.functions.notReady();
+        //SP.functions.updateStatus();
     });
 
 

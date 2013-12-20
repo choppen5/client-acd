@@ -270,6 +270,7 @@ end
 
 ### /status returns status for a particular client.  Ajax clients query the server in certain cases to get their status
 get '/status' do
+    logger.debug("Getting a /status request with params = #{params}")
     from = params[:from]
 
     agentstatus = mongoagents.find_one ({_id: from})
