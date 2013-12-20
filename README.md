@@ -1,13 +1,34 @@
 client-acd
 ==========
 
-Twilio ACD example - written with Ruby and Websockets
+Twilio ACD example - written with Ruby and HTML, Javascript,  websockets on the front end.  Deployable to Heroku. Embedable in Salesforce Open CTI.
+
+![TwilioSoftphone](http://uploadir.com/u/cm5el1v7)
+
+Features:
+- Agent presence (ready/not ready buttons)
+- Twilio Queues
+- Automatic Call Distribution (ACD) - Delivering call from Twilio Queues to the longest availible agent
+- Twilio Client - delivery to calls in the broswer
+- Realtime notifications of calls in queue, ready agents
+- Outbound calls, click2call from Salesforce
+
+Todo - future features:
+- Allow agent to choose to accept calls on a external number (mobile or desk), not just in-browser
+- Transfer
+- Hold
+- Voicemail
+- Queue timeout to voicemail - give callers an option to leave a voicemail after X time
+- Reporting  
 
 ### Pre requisites:
 - Twilio Account, Account SID, Auth Token
-- Salesforce instance, ability to create a Call Center
 - Heroku account, heroku installed
 - Git, account set up
+
+For Salesforce OpenCTI:
+- Salesforce instance, ability to create a Call Center 
+
 
 
 
