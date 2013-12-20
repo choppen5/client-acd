@@ -5,7 +5,7 @@ Twilio ACD example - written with Ruby and HTML, Javascript,  websockets on the 
 
 ![TwilioSoftphone](http://uploadir.com/u/cm5el1v7)
 
-Features:
+##Features
 - Agent presence (ready/not ready buttons)
 - Twilio Queues
 - Automatic Call Distribution (ACD) - Delivering call from Twilio Queues to the longest availible agent
@@ -13,7 +13,7 @@ Features:
 - Realtime notifications of calls in queue, ready agents
 - Outbound calls, click2call from Salesforce
 
-Todo - future features:
+##Todo - future features:
 - Allow agent to choose to accept calls on a external number (mobile or desk), not just in-browser
 - Transfer
 - Hold
@@ -38,9 +38,6 @@ For Salesforce OpenCTI:
 
 `cd client-acd `
 
-`bundle install` (if you want to run the code locally)
-
-To run client ACD, you need a number of environment variables, either to run it locally or to run it on Heroku. You can get some of the configuration options within Twilio, such twilio_account_sid, twilio_account_token, twilio_caller_id, twilio_caller_id. You aslo need a url to handle calls, and that will be either the Heroku app you create, or your local machine via a tunneling service.
 
 To get your configuration variables:
 
@@ -56,33 +53,8 @@ http://myapp.herokuapp.com/voice
 
 (You can either install and code locally, and use ngrok to reach your app, or deply direclty to heroku and test there).
 
-5. set environment variables:
 
-
-twilio_account_sid=**AC11ecc_your_account**
-
-twilio_account_token=**2ad0fb_your_sid**
-
-twilio_app_id=**AP_id_of_the_appyoucreate**
-
-twilio_caller_id=**+1415551212** 
-
-twilio_queue_name=**CustomerService**
-
-twilio_dqueue_url=https://your.localserver.com/voice 
-
-
-The method of setting these will vary by platform.  On Mac, you can: "export twilio_account_sid=AC11ecc_your_account" but that will only last during that session. Another option is edit you .bash_profile, and add:  export twilio_account=sid=C11ecc_your_account for all the variables.
-
-### Starting the process locally
-
-To start the process, if everything is set, within the client-acd folder:
-
-`ruby client-acd.rb` 
-
-This will start the process - locally for testing. To use this with Salesforce, Twilio, you will have to use a local tunnel service like Ngrok or LocalTunnel, or deploy to Heroku.
-
-### Deploy to Herok ####
+### Deploy to Heroku ####
 To deploy to Heroku:
 
 `heroku create` 
@@ -117,6 +89,42 @@ To check your config variables:
 To deploy to heroku:
 
 `git push heroku master`
+
+
+### Configure for running locally ####
+
+
+To run client ACD, you need a number of environment variables, either to run it locally or to run it on Heroku. You can get some of the configuration options within Twilio, such twilio_account_sid, twilio_account_token, twilio_caller_id, twilio_caller_id. You aslo need a url to handle calls, and that will be either the Heroku app you create, or your local machine via a tunneling service.
+
+Set up code to run locally - this assumes you have the correct Ruby environment or can get it running:
+
+`bundle install` 
+
+5. set environment variables:
+
+
+twilio_account_sid=**AC11ecc_your_account**
+
+twilio_account_token=**2ad0fb_your_sid**
+
+twilio_app_id=**AP_id_of_the_appyoucreate**
+
+twilio_caller_id=**+1415551212** 
+
+twilio_queue_name=**CustomerService**
+
+twilio_dqueue_url=https://your.localserver.com/voice 
+
+
+The method of setting these will vary by platform.  On Mac, you can: "export twilio_account_sid=AC11ecc_your_account" but that will only last during that session. Another option is edit you .bash_profile, and add:  export twilio_account=sid=C11ecc_your_account for all the variables.
+
+### Starting the process locally
+
+To start the process, if everything is set, within the client-acd folder:
+
+`ruby client-acd.rb` 
+
+This will start the process - locally for testing. To use this with Salesforce, Twilio, you will have to use a local tunnel service like Ngrok or LocalTunnel, or deploy to Heroku.
 
 
 
