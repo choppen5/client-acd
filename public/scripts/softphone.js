@@ -7,7 +7,9 @@ $(function() {
     // Global state
     SP.state = {};
     SP.state.callNumber = null;
+    SP.state.calltype = "";
     SP.username = "default_client";
+
 
 
     SP.functions = {};
@@ -231,11 +233,12 @@ $(function() {
         if (conn.parameters.From) {
           callNum = conn.parameters.From;
           status = "Call From: " + callNum;
+          SP.calltype = "Inbound";
         } else {
           status = "Outbound call";
+          SP.calltype = "Outbound";
 
         }
-
 
         SP.functions.updateAgentStatusText("onCall", status);
         SP.functions.detachAnswerButton();
@@ -249,6 +252,7 @@ $(function() {
 
     /* Listen for incoming connections */
     Twilio.Device.incoming(function (conn) {
+
 
       // Update agent status 
       sforce.interaction.setVisible(true);  //pop up CTI console
@@ -330,7 +334,7 @@ $(function() {
             params = {"PhoneNumber": cleanednumber};
             Twilio.Device.connect(params);
 
-    }
+    } 
 
     function saveLog(response) {
             
@@ -346,19 +350,20 @@ $(function() {
             var currentMonth = currentDate.getMonth()+1;
             var currentYear = currentDate.getFullYear();
             var dueDate = currentYear + '-' + currentMonth + '-' + currentDay;
-            var saveParams = 'Subject=' + 'Call on ' + timeStamp;
+            var saveParams = 'Subject=' + SP.calltype +' Call on ' + timeStamp;
 
             saveParams += '&Status=completed';                  
-            saveParams += '&CallType=' + 'Inbound';
+            saveParams += '&CallType=' + SP.calltype;  //should change this to reflect actual inbound or outbound
             saveParams += '&Activitydate=' + dueDate;
-            saveParams += '&CallObject=' + currentDate.getTime();
             saveParams += '&Phone=' + SP.state.callNumber;  //we need to get this from.. somewhere      
             saveParams += '&Description=' + "test description";   
 
             console.log("About to parse  result..");
             
             var result = JSON.parse(response.result);
-            if(result.objectId.substr(0,3) == '003') {
+            var objectidsubstr = result.objectId.substr(0,3);
+            // object id 00Q means a lead.. adding this to support logging on leads as well as contacts.
+            if(objectidsubstr == '003' || objectidsubstr == '00Q') {
                 saveParams += '&whoId=' + result.objectId;                    
             } else {
                 saveParams += '&whatId=' + result.objectId;            
