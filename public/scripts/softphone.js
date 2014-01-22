@@ -336,6 +336,15 @@ $(function() {
 
     } 
 
+    var saveLogcallback = function (response) {
+        if (response.result) {
+          console.log("saveLog result =" + response.result);
+        } else {
+          console.log("saveLog error = " + response.error);
+        }
+    };
+
+
     function saveLog(response) {
             
             console.log("saving log result, response:");
@@ -370,7 +379,7 @@ $(function() {
             }
             
             console.log("save params = " + saveParams);
-            sforce.interaction.saveLog('Task', saveParams);
+            sforce.interaction.saveLog('Task', saveParams, saveLogcallback);
   }
 
 

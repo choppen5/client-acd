@@ -4,8 +4,8 @@ body {
   background-color: white;
 }
 div#softphone {
-  width: 220px;
-  padding: 7px;
+  width: 190px;
+  padding: 5px;
 }
 .button-style {
   background-color: #fff;
@@ -63,7 +63,7 @@ div.divider {
 }
 div#number-entry input {
   border: 1px solid #ccc;
-  width: 208px;
+  width: 178px;
   padding: 5px;
   margin: 0px;
 }
@@ -79,7 +79,7 @@ div#dialer {
   height: 20px;
   padding-top: 6px;
   margin-bottom: 4px;
-  width: 68px;
+  width: 60px;
   background-image: linear-gradient(bottom, #f0f0f0 20%, #f5f5f5 72%);
   background-image: -o-linear-gradient(bottom, #f0f0f0 20%, #f5f5f5 72%);
   background-image: -moz-linear-gradient(bottom, #f0f0f0 20%, #f5f5f5 72%);
@@ -105,7 +105,7 @@ div#action-buttons {
 }
 div#action-buttons button {
   height: 100%;
-  width: 69px;
+  width: 59px;
   margin-left: 1px;
   display: inline-block;
   background-color: #fff;
