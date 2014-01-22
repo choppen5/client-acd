@@ -66,7 +66,7 @@ To deploy to Heroku:
 
 `heroku addons:add mongohq`
 
-This will produce a url for mongo such as "mongodb://heroku:762d44203xxxx@servername.mongohq.com:10008/app1111111 - you can use the URL locally too.  
+This will produce a url for mongo such as "mongodb://heroku:762d44203xxxx@servername.mongohq.com:10008/app1111111 - you can use the URL locally too.  To use the code locally, you need to set a local environment varialbe MONGOHQ_URL.
 
 To see your MongoHQ URL,use the command: 
 
@@ -114,6 +114,8 @@ twilio_caller_id=**+1415551212**
 twilio_queue_name=**CustomerService**
 
 twilio_dqueue_url=https://your.localserver.com/voice 
+
+MONGOHQ_URL="mongodb://heroku:FSDFDSFSDFDSFSDFS@lex.mongohq.com:10079/XXXXXX"
 
 
 The method of setting these will vary by platform.  On Mac, you can: "export twilio_account_sid=AC11ecc_your_account" but that will only last during that session. Another option is edit you .bash_profile, and add:  export twilio_account=sid=C11ecc_your_account for all the variables.
