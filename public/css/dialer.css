@@ -4,8 +4,8 @@ body {
   background-color: white;
 }
 div#softphone {
-  width: 188px;
-  padding: 4px;
+  width: 185px;
+  padding: 2px;
 }
 .button-style {
   background-color: #fff;
@@ -31,7 +31,7 @@ div#agent-status-controls button:hover {
 }
 div#agent-status {
   text-align: center;
-  padding: 10px 0 10px 0;
+  padding: 5px 0 5px 0;
   -webkit-border-radius: 7px;
   -moz-border-radius: 7px;
   -ms-border-radius: 7px;
@@ -63,7 +63,7 @@ div.divider {
 }
 div#number-entry input {
   border: 1px solid #ccc;
-  width: 178px;
+  width: 174px;
   padding: 5px;
   margin: 0px;
 }
@@ -105,7 +105,7 @@ div#action-buttons {
 }
 div#action-buttons button {
   height: 100%;
-  width: 59px;
+  width: 58px;
   margin-left: 1px;
   display: inline-block;
   background-color: #fff;
