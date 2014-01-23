@@ -80,7 +80,7 @@ You can set ALL the environment variables with this command
 `twilio_app_id=APab79b652xxxxxxxxx` 
 `twilio_caller_id=+14156xxxxx` 
 `twilio_queue_name=CustomerService` 
-`twilio_dqueue_url=https://http://myapp.herokuapp.com/voice`
+`twilio_dqueue_url=http://myapp.herokuapp.com/voice`
 
 To check your config variables:
 
