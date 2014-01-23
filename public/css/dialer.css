@@ -4,8 +4,8 @@ body {
   background-color: white;
 }
 div#softphone {
-  width: 190px;
-  padding: 5px;
+  width: 188px;
+  padding: 4px;
 }
 .button-style {
   background-color: #fff;
@@ -31,7 +31,7 @@ div#agent-status-controls button:hover {
 }
 div#agent-status {
   text-align: center;
-  padding: 1px 0 1px 0;
+  padding: 10px 0 10px 0;
   -webkit-border-radius: 7px;
   -moz-border-radius: 7px;
   -ms-border-radius: 7px;
