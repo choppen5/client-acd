@@ -35,6 +35,10 @@ $(function() {
           Twilio.Device.setup(token, {debug: true});
       });
 
+      $.get("/getcallerid", { "from":SP.username}, function(data) {
+        $("#callerid-entry > input").val(data);
+      });
+
       SP.functions.startWebSocket();
 
 
@@ -142,7 +146,7 @@ $(function() {
 
     // Call button will make an outbound call (click to dial) to the number entered 
     $("#action-buttons > button.call").click( function( ) {
-      params = {"PhoneNumber": $("#number-entry > input").val()};
+      params = {"PhoneNumber": $("#number-entry > input").val(), "CallerId": $("#callerid-entry > input").val()};
       Twilio.Device.connect(params);
     });
 
@@ -278,6 +282,11 @@ $(function() {
     });
 
 
+    $("#callerid-entry > input").change( function() {
+        $.post("/setcallerid", { "from":SP.username, "callerid": $("#callerid-entry > input").val() });
+    });
+
+
 
     // Set server-side status to ready / not-ready
     SP.functions.notReady = function() {
@@ -331,7 +340,7 @@ $(function() {
 
 
             //alert("cleanednumber = " + cleanednumber);  
-            params = {"PhoneNumber": cleanednumber};
+            params = {"PhoneNumber": cleanednumber, "CallerId": $("#callerid-entry > input").val()};
             Twilio.Device.connect(params);
 
     } 

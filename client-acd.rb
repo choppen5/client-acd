@@ -243,7 +243,7 @@ end
 post '/dial' do
     puts "Params for dial = #{params}"
     number = params[:PhoneNumber]
-
+    caller_id = params[:CallerId] || caller_id
     response = Twilio::TwiML::Response.new do |r|
         # outboudn dialing (from client) must have a :callerId    
         r.Dial :callerId => caller_id do |d|
@@ -263,10 +263,11 @@ post '/track' do
     status = params[:status]
 
     logger.debug("For client #{from} settings status to #{status}")
-    mongoagents.update({_id: from} , { "$set" =>   {status: status,readytime: Time.now.to_f  }})
+    mongoagents.update({_id: from} , { "$set" =>   {status: status,readytime: Time.now.to_f}})
 
     return ""
 end
+
 
 ### /status returns status for a particular client.  Ajax clients query the server in certain cases to get their status
 get '/status' do
@@ -280,7 +281,31 @@ get '/status' do
     return agentstatus
 end
 
- 
+post '/setcallerid' do
+    from = params[:from]
+    callerid = params[:callerid]
+
+    logger.debug("Updating callerid for #{from} to #{callerid}")
+    mongoagents.update({_id: from} , { "$set" =>   {callerid: callerid}})
+
+    return ""
+end
+
+
+get '/getcallerid' do
+    from = params[:from]
+
+    logger.debug("Getting callerid for #{from}")
+    callerid = ""
+    
+    agent = mongoagents.find_one ({_id: from})
+    if agent
+       callerid = agent["callerid"]
+    end
+    return callerid
+
+end
+
 
 #Method that gets all "Ready" agents, sorts by longest idle (ie, the first availible) 
 # If callrouting == true, this function is being called from voice routing, and we want to select a "Ready" agent or a "DeQueing" agent
