@@ -242,11 +242,14 @@ end
 
 post '/dial' do
     puts "Params for dial = #{params}"
+    
     number = params[:PhoneNumber]
-    caller_id = params[:CallerId] || caller_id
+    dial_id = params[:CallerId] || caller_id
+
+
     response = Twilio::TwiML::Response.new do |r|
         # outboudn dialing (from client) must have a :callerId    
-        r.Dial :callerId => caller_id do |d|
+        r.Dial :callerId => dial_id do |d|
           d.Number number
         end
     end
