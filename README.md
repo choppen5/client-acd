@@ -4,7 +4,6 @@ client-acd
 Twilio ACD example - written with Ruby and HTML, Javascript,  websockets on the front end.  Deployable to Heroku. Embedable in Salesforce Open CTI.
 
 ![TwilioSoftphone](http://uploadir.com/u/cm5el1v7)
-![TwilioSoftphone2](http://uploadir.com/u/cm5el1v7)
 
 ##Features
 - Agent presence (ready/not ready buttons)
@@ -42,17 +41,19 @@ For Salesforce OpenCTI:
 
 To get your configuration variables:
 
-### Twilio Config
-- Geting an appid: create a Twilio App in Devtool -> TwimlApps -> Create App (note the app id created)
- set name for example "Client-acd"
- set URL to = http://myapp.herokuapp.com/dial (or your local tunnel address)
-
-
-- Buy a Twilio phone number, and add the Heroku url you just created, it /voice on it, to the voice url.
-http://myapp.herokuapp.com/voice
-
-
 (You can either install and code locally, and use ngrok to reach your app, or deply direclty to heroku and test there).
+
+### Twilio Config
+1. Create a Twilio Appid 
+ - you will need this for subseqent steps to set the twilio_app_id.
+ - create a Twilio App in Devtool -> TwimlApps -> Create App (note the app id created)
+ - set name for example "Client-acd".    
+ - Note the app id created here. You will need it for later.  
+ - After you create a Heroku app/URL, you will need to come back to this Twilio Application, and set the Voice URL to point to your newely created Heroku URL. 
+
+2. Buy a Twilio phone number - you will need this for subseqent steps.
+ - Note the Phone number created here. You will need it for later for the twilio_caller_id parameter.  
+ - After you create your Heroku app, you will need to come back to this Twilio Phone number and set the VoiceURL parameter to point to your new Heroku app.
 
 
 ### Deploy to Heroku ####
@@ -78,10 +79,17 @@ You can set ALL the environment variables with this command
 
 `heroku config:set twilio_account_sid=AC11ecc09xxxxxx`   
 `twilio_account_token=2ad0fb4ab2xxxxxxxxxxxxx` 
-`twilio_app_id=APab79b652xxxxxxxxx` 
 `twilio_caller_id=+14156xxxxx` 
 `twilio_queue_name=CustomerService` 
 `twilio_dqueue_url=http://myapp.herokuapp.com/voice`
+`twilio_app_id=APab79b652xxxxxxxxx` 
+
+
+### Twilio Config
+- Set the Voice URL for your app: For the app you created for twilio_app_id, now set the Heroku URL, to the /dial path. For example, if you created a Heroku app called  "http://myapp.herokuapp.com" you would set the Voice URL of your app to  http://myapp.herokuapp.com/dial.  
+
+- Set the Voice URL for the Twilio Phone number you set to point to your Heroku app on the /voice, for example http://myapp.herokuapp.com/voice. This will route new calls to the /voice path of your new heroku app.
+
 
 To check your config variables:
 
