@@ -9,6 +9,7 @@ $(function() {
     SP.state.callNumber = null;
     SP.state.calltype = "";
     SP.username = "default_client";
+    SP.currentCall = null;  //instance variable for tracking current connection
 
 
 
@@ -71,8 +72,21 @@ $(function() {
 
     // Hook up numpad to input field
     $("div.number").bind('click',function(){
-      $("#number-entry > input").val($("#number-entry > input").val()+$(this).attr('Value'));
+      //$("#number-entry > input").val($("#number-entry > input").val()+$(this).attr('Value'));
+      //pass key without conn to a function
+      SP.functions.handleKeyEntry($(this).attr('Value'));  
+
     });
+
+    SP.functions.handleKeyEntry = function (key) {  
+       if (SP.currentCall != null) {
+          console.log("sending DTMF" + key);
+          SP.currentCall.sendDigits(key);
+       } else {
+         $("#number-entry > input").val($("#number-entry > input").val()+key);
+       }
+
+    }
 
     // Hide caller info
     SP.functions.hideCallData = function() {
@@ -116,6 +130,20 @@ $(function() {
 
     SP.functions.detachAnswerButton = function() {
       $("#action-buttons > button.answer").unbind().removeClass('active').addClass("inactive");
+    }
+
+    SP.functions.attachMuteButton = function(conn) {
+      $("#action-buttons > button.mute").click(function() {
+        conn.mute();
+        SP.functions.attachUnMute(conn);
+      }).removeClass('inactive').addClass("active").text("Mute");
+    }
+
+    SP.functions.attachUnMute = function(conn) {
+      $("#action-buttons > button.mute").click(function() {
+        conn.unmute();
+        SP.functions.attachMuteButton(conn);
+      }).removeClass('inactive').addClass("active").text("UnMute");
     }
 
     SP.functions.updateAgentStatusText = function(statusCategory, statusText) {
@@ -222,6 +250,7 @@ $(function() {
         
         // deactivate answer button
         SP.functions.detachAnswerButton();
+        SP.currentCall = null;
         
         // return to waiting state
         SP.functions.hideCallData();
@@ -246,6 +275,9 @@ $(function() {
 
         SP.functions.updateAgentStatusText("onCall", status);
         SP.functions.detachAnswerButton();
+
+        SP.currentCall = conn;
+        SP.functions.attachMuteButton(conn);
 
         //send status info
         $.post("/track", { "from":SP.username, "status":"OnCall" }, function(data) {
@@ -278,6 +310,9 @@ $(function() {
         SP.functions.detachAnswerButton();
         SP.functions.hideCallData();
         SP.functions.notReady();
+
+        $(".number").unbind();
+        SP.currentCall = null;
         //SP.functions.updateStatus();
     });
 
@@ -390,10 +425,4 @@ $(function() {
             console.log("save params = " + saveParams);
             sforce.interaction.saveLog('Task', saveParams, saveLogcallback);
   }
-
-
-
-
-
-
 });
