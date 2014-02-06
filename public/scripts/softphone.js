@@ -146,6 +146,10 @@ $(function() {
       }).removeClass('inactive').addClass("active").text("UnMute");
     }
 
+    SP.functions.detachMuteButton = function() {
+      $("#action-buttons > button.mute").unbind().removeClass('active').addClass("inactive");
+    }
+
     SP.functions.updateAgentStatusText = function(statusCategory, statusText) {
 
       if (statusCategory == "ready") {
@@ -250,6 +254,7 @@ $(function() {
         
         // deactivate answer button
         SP.functions.detachAnswerButton();
+        SP.functions.detachMuteButton();
         SP.currentCall = null;
         
         // return to waiting state
