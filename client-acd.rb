@@ -24,6 +24,7 @@ caller_id = ENV['twilio_caller_id']  #number your agents will click2dialfrom
 qname = ENV['twilio_queue_name']
 dqueueurl = ENV['twilio_dqueue_url']
 mongohqdbstring = ENV['MONGOHQ_URL']
+anycallerid = ENV['anycallerid'] || "hidden"   #to use anycallerid (agents set their own caller id), your Twilio Account must be provisioned.  So default is false, agents wont' be able to use any callerid.
 
 
 ########### DB Setup  ###################
@@ -94,7 +95,7 @@ get '/' do
         client_name = default_client
   end
 
-  erb :index, :locals => {}
+  erb :index, :locals => {:anycallerid => anycallerid}
 end
 
 ## Returns a token for a Twilio client
