@@ -100,18 +100,20 @@ div.button:hover {
 }
 
 div#action-button-container {
-  height: 45px;
+  display: inline-block;
+  height: auto;
+  width: 100%;
 }
 
 div#action-buttons {
   padding: 0;
   height: 20px;
   margin-bottom: 5px;
-
+  width: 98%;
 }
 div#action-buttons button {
   height: 100%;
-  width: 40px;
+  width: 100%;
   margin-top: 5px;
   margin-left: 1px;
   display: inline-block;

@@ -190,7 +190,6 @@ $(function() {
              SP.functions.attachUnHold(conn, data);
 
           });
-
       }).removeClass('inactive').addClass("active").text("Hold");
     }
 
