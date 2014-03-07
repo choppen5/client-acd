@@ -310,6 +310,60 @@ get '/getcallerid' do
 
 end
 
+#ajax request from Web UI, acccepts a casllsid, do a REST call to redirect to /hold
+post '/request_hold' do
+    from = params[:from]  #agent name
+    callsid = params[:callsid]  #call sid the agent has for their leg
+
+    @client = Twilio::REST::Client.new(account_sid, auth_token)
+    parentsid = @client.account.calls.get(callsid).parent_call_sid  #parent callsid is the customer leg of the call for inbound
+    puts "parentsid = #{parentsid}"
+    
+    customer_call = @client.account.calls.get(parentsid)
+    customer_call.update(:url => "http://macbook.ngrok.com/hold",
+                 :method => "POST")  
+    puts customer_call.to
+    return parentsid
+end
+
+#Twiml response for hold, currently uses Monkey as hold music
+post '/hold' do
+    response = Twilio::TwiML::Response.new do |r|
+      r.Play "https://demo.twilio.com/hellomonkey/monkey.mp3", :loop=>0 
+    end
+
+    puts response.text
+    response.text
+end
+
+## Ajax post request that retrieves from hold
+post '/request_unhold' do
+    from = params[:from]
+    callsid = params[:callsid]  #this should be a valid call sid to  "unhold"
+
+    @client = Twilio::REST::Client.new(account_sid, auth_token)
+
+    call = @client.account.calls.get(callsid)
+    call.update(:url => "http://macbook.ngrok.com/send_to_agent?target_agent=#{from}",
+                 :method => "POST")  
+    puts call.to
+end
+
+post '/send_to_agent' do
+   target_agent = params[:target_agent]
+   puts params
+
+   #todo: update agent status from here - ie hold
+   response = Twilio::TwiML::Response.new do |r|
+      r.Dial do |d|
+        d.Client target_agent
+      end 
+   end
+
+   puts response.text
+   response.text  
+
+end
 
 #Method that gets all "Ready" agents, sorts by longest idle (ie, the first availible) 
 # If callrouting == true, this function is being called from voice routing, and we want to select a "Ready" agent or a "DeQueing" agent

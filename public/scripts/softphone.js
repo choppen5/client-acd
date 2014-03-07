@@ -88,11 +88,42 @@ $(function() {
 
     }
 
+    //called when agent is not on a call
+    SP.functions.setIdleState = function() {
+        $("#action-buttons > .call").show();
+        $("#action-buttons > .answer").hide();
+        $("#action-buttons > .mute").hide();
+        $("#action-buttons > .hold").hide();
+        $("#action-buttons > .unhold").hide();
+        $("#action-buttons > .hangup").hide();
+    }
+
+    SP.functions.setRingState = function () {
+        $("#action-buttons > .answer").show();
+        $("#action-buttons > .call").hide();
+        $("#action-buttons > .mute").hide();
+        $("#action-buttons > .hold").hide();
+        $("#action-buttons > .unhold").hide();
+        $("#action-buttons > .hangup").hide();
+
+    }
+
+    SP.functions.setOnCallState = function() {
+        $("#action-buttons > .answer").hide();
+        $("#action-buttons > .call").hide();
+        $("#action-buttons > .mute").show();
+        $("#action-buttons > .hold").show();
+        $("#action-buttons > .hangup").show();
+    }
+
     // Hide caller info
     SP.functions.hideCallData = function() {
       $("#call-data").hide();
     }
     SP.functions.hideCallData();
+    SP.functions.setIdleState();
+
+
 
     // Show caller info
     SP.functions.showCallData = function(callData) {
@@ -149,6 +180,36 @@ $(function() {
     SP.functions.detachMuteButton = function() {
       $("#action-buttons > button.mute").unbind().removeClass('active').addClass("inactive");
     }
+
+    SP.functions.attachHoldButton = function(conn) {
+      $("#action-buttons > button.hold").click(function() {
+         console.dir(conn);
+         $.post("/request_hold", { "from":SP.username, "callsid":conn.parameters.CallSid }, function(data) {
+             //Todo: handle errors
+             //Todo: change status in future
+             SP.functions.attachUnHold(conn, data);
+          });
+
+      }).removeClass('inactive').addClass("active").text("Hold");
+    }
+
+    SP.functions.attachUnHold = function(conn, holdid) {
+      $("#action-buttons > button.unhold").click(function() {
+        //do ajax request to hold for the conn.id
+         
+         $.post("/request_unhold", { "from":SP.username, "callsid":holdid }, function(data) {
+             //Todo: handle errors
+             //Todo: change status in future
+             //SP.functions.attachHoldButton(conn);
+          });
+        
+      }).removeClass('inactive').addClass("active").text("UnHold");
+    }
+
+    SP.functions.detachHoldButton = function() {
+      $("#action-buttons > button.unhold").unbind().removeClass('active').addClass("inactive");
+    }
+
 
     SP.functions.updateAgentStatusText = function(statusCategory, statusText) {
 
@@ -246,20 +307,24 @@ $(function() {
 
     /* Log a message when a call disconnects. */
     Twilio.Device.disconnect(function (conn) {
+        console.log("disconnectiong...");
         SP.functions.updateAgentStatusText("ready", "Call ended");
 
-        sforce.interaction.getPageInfo(saveLog);
+        
         
         SP.state.callNumber = null;
         
         // deactivate answer button
         SP.functions.detachAnswerButton();
         SP.functions.detachMuteButton();
+        SP.functions.setIdleState(); 
+        
         SP.currentCall = null;
         
         // return to waiting state
         SP.functions.hideCallData();
         SP.functions.ready();
+        //sforce.interaction.getPageInfo(saveLog);
     });
 
     Twilio.Device.connect(function (conn) {
@@ -278,11 +343,16 @@ $(function() {
 
         }
 
+        console.dir(conn);
+
+
         SP.functions.updateAgentStatusText("onCall", status);
+        SP.functions.setOnCallState();
         SP.functions.detachAnswerButton();
 
         SP.currentCall = conn;
         SP.functions.attachMuteButton(conn);
+        SP.functions.attachHoldButton(conn);
 
         //send status info
         $.post("/track", { "from":SP.username, "status":"OnCall" }, function(data) {
@@ -300,6 +370,9 @@ $(function() {
       SP.functions.updateAgentStatusText("ready", ("Call from: " + conn.parameters.From))
       // Enable answer button and attach to incoming call
       SP.functions.attachAnswerButton(conn);
+      SP.functions.setRingState();
+  
+
 
 
       var inboundnum = cleanInboundTwilioNumber(conn.parameters.From);

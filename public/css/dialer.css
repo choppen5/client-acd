@@ -98,14 +98,21 @@ div.button:hover {
   background-image: -ms-linear-gradient(bottom, #c4c4c4 34%, #cccccc 71%);
   background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0.34, #c4c4c4), color-stop(0.71, #cccccc));
 }
+
+div#action-button-container {
+  height: 45px;
+}
+
 div#action-buttons {
   padding: 0;
-  height: 30px;
+  height: 20px;
   margin-bottom: 5px;
+
 }
 div#action-buttons button {
   height: 100%;
   width: 40px;
+  margin-top: 5px;
   margin-left: 1px;
   display: inline-block;
   font-size: 30%;
