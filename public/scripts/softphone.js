@@ -189,7 +189,6 @@ $(function() {
              //Todo: change status in future
              SP.functions.attachUnHold(conn, data);
           });
-
       }).removeClass('inactive').addClass("active").text("Hold");
     }
 
