@@ -344,7 +344,7 @@ post '/request_unhold' do
     @client = Twilio::REST::Client.new(account_sid, auth_token)
 
     call = @client.account.calls.get(callsid)
-    call.update(:url => "http://macbook.ngrok.com/send_to_agent?target_agent=#{from}",
+    call.update(:url => "#{request.base_url}/send_to_agent?target_agent=#{from}",
                  :method => "POST")  
     puts call.to
 end

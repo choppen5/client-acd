@@ -190,6 +190,7 @@ $(function() {
              SP.functions.attachUnHold(conn, data);
 
           });
+
       }).removeClass('inactive').addClass("active").text("Hold");
     }
 
@@ -206,9 +207,12 @@ $(function() {
       }).removeClass('inactive').addClass("active").text("UnHold").show();
     }
 
-    SP.functions.detachHoldButton = function() {
+    SP.functions.detachHoldButtons = function() {
       $("#action-buttons > button.unhold").unbind().removeClass('active').addClass("inactive");
+      $("#action-buttons > button.hold").unbind().removeClass('active').addClass("inactive");
     }
+
+
 
 
     SP.functions.updateAgentStatusText = function(statusCategory, statusText) {
@@ -317,6 +321,7 @@ $(function() {
         // deactivate answer button
         SP.functions.detachAnswerButton();
         SP.functions.detachMuteButton();
+        SP.functions.detachHoldButtons();
         SP.functions.setIdleState(); 
         
         SP.currentCall = null;
@@ -386,6 +391,7 @@ $(function() {
     Twilio.Device.cancel(function(conn) {
         console.log(conn.parameters.From); // who canceled the call
         SP.functions.detachAnswerButton();
+        SP.functions.detachHoldButtons();
         SP.functions.hideCallData();
         SP.functions.notReady();
 
