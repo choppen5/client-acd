@@ -188,6 +188,7 @@ $(function() {
              //Todo: handle errors
              //Todo: change status in future
              SP.functions.attachUnHold(conn, data);
+
           });
 
       }).removeClass('inactive').addClass("active").text("Hold");
@@ -203,7 +204,7 @@ $(function() {
              //SP.functions.attachHoldButton(conn);
           });
         
-      }).removeClass('inactive').addClass("active").text("UnHold");
+      }).removeClass('inactive').addClass("active").text("UnHold").show();
     }
 
     SP.functions.detachHoldButton = function() {
