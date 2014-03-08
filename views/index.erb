@@ -16,9 +16,8 @@
 <body>
   <div id="softphone">
 
-    <div id="agent-status-controls">
-      <button class="agent-status not-ready">Not Ready</button>
-      <button class="agent-status ready">Ready</button>
+    <div id="agent-status-controls" class="clearfix">
+      <button class="agent-status ready">Ready</button><button class="agent-status not-ready">Not Ready</button><div class="agent-status active">Call In-Progress</div>
     </div><!-- /agent-status -->
 
     <div id="agent-status">
@@ -27,27 +26,14 @@
 
     <div class="divider"></div>
 
-
-
     <div id="number-entry">
-      <input placeholder="Enter a phone number to call"></input>
+      <input placeholder="+1 (555) 555-5555"></input>
     </div><!-- /number-entry" -->
 
     <div id="dialer">
       <div id="dialer-container">
         <div class="numpad-container">
-          <div class="number" value="1">1</div>
-          <div class="number" value="2">2</div>
-          <div class="number" value="3">3</div>
-          <div class="number" value="4">4</div>
-          <div class="number" value="5">5</div>
-          <div class="number" value="6">6</div>
-          <div class="number" value="7">7</div>
-          <div class="number" value="8">8</div>
-          <div class="number" value="9">9</div>
-          <div class="number" value="*">*</div>
-          <div class="number" value="0">0</div>
-          <div class="number" value="#">#</div>
+          <div class="number" value="1">1</div><div class="number" value="2">2</div><div class="number" value="3">3</div><div class="number" value="4">4</div><div class="number" value="5">5</div><div class="number" value="6">6</div><div class="number" value="7">7</div><div class="number" value="8">8</div><div class="number" value="9">9</div><div class="number ast" value="*">&lowast;</div><div class="number" value="0">0</div><div class="number" value="#">#</div>
         </div><!-- /numpad-container -->
       </div><!-- /dialer-container -->
     </div><!-- /dialer -->
@@ -63,8 +49,6 @@
     </div><!-- /action-buttons -->
   </div><!---action-button-containe -->
 
-
-
     <div id="call-data">
       <h3>Caller info</h3>
       <ul class="name"><strong>Name: </strong><span class="caller-name"></span></ul>
@@ -79,13 +63,12 @@
     </div><!-- /number-entry" -->
 
     <div id="team-status">
-      <div class="agents-status">Ready agents: ?</div>
-      <div class="queues-status">Call queue: ?</div>
+      <div class="agents-status"><div class="agents-num">-</div>Agents</div><div class="queues-status"><div class="queues-num">-</div>In-Queue</div>
     </div><!-- /team-status -->
 
-
-
-    <img src="/poweredby.png" />
+    <div class="powered-by">
+      <img src="/poweredby.png" />
+    </div>
 
   </div><!-- /softphone -->
 </body>

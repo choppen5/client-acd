@@ -62,8 +62,8 @@ $(function() {
         
         var result = JSON.parse(m.data);
 
-        $("#team-status > .queues-status").text("Call Queue:  " + result.queuesize);
-        $("#team-status > .agents-status").text("Ready Agents:  " + result.readyagents); 
+        $("#team-status .queues-num").text(result.queuesize);
+        $("#team-status .agents-num").text(result.readyagents); 
       };
 
     }
@@ -238,7 +238,7 @@ $(function() {
           $("#agent-status").addClass("on-call");
       }
 
-      $("#agent-status > p").text(statusText);
+      //$("#agent-status > p").text(statusText);
     }
 
     // Call button will make an outbound call (click to dial) to the number entered 
