@@ -96,6 +96,7 @@ $(function() {
         $("#action-buttons > .hold").hide();
         $("#action-buttons > .unhold").hide();
         $("#action-buttons > .hangup").hide();
+        $('div.agent-status').hide();
     }
 
     SP.functions.setRingState = function () {
@@ -105,7 +106,6 @@ $(function() {
         $("#action-buttons > .hold").hide();
         $("#action-buttons > .unhold").hide();
         $("#action-buttons > .hangup").hide();
-
     }
 
     SP.functions.setOnCallState = function() {
@@ -114,6 +114,7 @@ $(function() {
         $("#action-buttons > .mute").show();
         $("#action-buttons > .hold").show();
         $("#action-buttons > .hangup").show();
+        $('div.agent-status').show();
     }
 
     // Hide caller info
@@ -122,8 +123,6 @@ $(function() {
     }
     SP.functions.hideCallData();
     SP.functions.setIdleState();
-
-
 
     // Show caller info
     SP.functions.showCallData = function(callData) {
@@ -236,6 +235,11 @@ $(function() {
           $("#agent-status-controls > button.not-ready").prop("disabled",true); 
           $("#agent-status").removeClass();
           $("#agent-status").addClass("on-call");
+          $('#softphone').removeClass('incoming');
+      }
+
+      if (statusText.indexOf('Call from') > -1) { 
+        $('#softphone').addClass('incoming');
       }
 
       //$("#agent-status > p").text(statusText);
@@ -372,7 +376,7 @@ $(function() {
 
       // Update agent status 
       sforce.interaction.setVisible(true);  //pop up CTI console
-      SP.functions.updateAgentStatusText("ready", ("Call from: " + conn.parameters.From))
+      SP.functions.updateAgentStatusText("ready", ("Call from: " + conn.parameters.From));
       // Enable answer button and attach to incoming call
       SP.functions.attachAnswerButton(conn);
       SP.functions.setRingState();

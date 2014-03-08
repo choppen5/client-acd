@@ -14,7 +14,7 @@
 
 </head>
 <body>
-  <div id="softphone">
+  <div id="softphone" class="softphone">
 
     <div id="agent-status-controls" class="clearfix">
       <button class="agent-status ready">Ready</button><button class="agent-status not-ready">Not Ready</button><div class="agent-status active">Call In-Progress</div>
@@ -28,6 +28,7 @@
 
     <div id="number-entry">
       <input placeholder="+1 (555) 555-5555"></input>
+      <div class="incoming-call-status">Incoming Call</div>
     </div><!-- /number-entry" -->
 
     <div id="dialer">
@@ -43,9 +44,7 @@
       <button class="call">Call</button>
       <button class="answer">Answer</button>
       <button class="hangup">Hangup</button>
-      <button class="mute">Mute</button>
-      <button class="hold">Hold</button>
-      <button class="unhold">UnHold</button>
+      <button class="mute">Mute</button><button class="hold">Hold</button><button class="unhold">UnHold</button>
     </div><!-- /action-buttons -->
   </div><!---action-button-containe -->
 
