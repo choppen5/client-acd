@@ -21,7 +21,7 @@ body {
 
 #softphone {
   width: 175px;
-  margin: 10px auto 0;
+  margin: 10px auto 0px;
 }
 
 #agent-status-controls {
@@ -296,7 +296,7 @@ input {
   margin: 0;
   font-size: 14px;
   text-align: center;
-  padding: 20px 0 22px;
+  padding: 12px 0 16px;
   border-bottom: solid 1px #e5e5e5;
 }
 
