@@ -97,6 +97,7 @@ $(function() {
         $("#action-buttons > .unhold").hide();
         $("#action-buttons > .hangup").hide();
         $('div.agent-status').hide();
+        $("#number-entry > input").val("");
     }
 
     SP.functions.setRingState = function () {
@@ -214,13 +215,15 @@ $(function() {
 
 
 
-    SP.functions.updateAgentStatusText = function(statusCategory, statusText) {
+    SP.functions.updateAgentStatusText = function(statusCategory, statusText, inboundCall) {
 
       if (statusCategory == "ready") {
            $("#agent-status-controls > button.ready").prop("disabled",true); 
            $("#agent-status-controls > button.not-ready").prop("disabled",false); 
            $("#agent-status").removeClass();
            $("#agent-status").addClass("ready");
+           $('#softphone').removeClass('incoming');
+
        }
 
       if (statusCategory == "notReady") {
@@ -228,6 +231,8 @@ $(function() {
            $("#agent-status-controls > button.not-ready").prop("disabled",true); 
            $("#agent-status").removeClass();
            $("#agent-status").addClass("not-ready");
+           $('#softphone').removeClass('incoming');
+
       }
 
       if (statusCategory == "onCall") {
@@ -238,8 +243,10 @@ $(function() {
           $('#softphone').removeClass('incoming');
       }
 
-      if (statusText.indexOf('Call from') > -1) { 
+      if (inboundCall ==  true) { 
+        //alert("call from " + statusText);
         $('#softphone').addClass('incoming');
+        $("#number-entry > input").val(statusText);
       }
 
       //$("#agent-status > p").text(statusText);
@@ -376,7 +383,7 @@ $(function() {
 
       // Update agent status 
       sforce.interaction.setVisible(true);  //pop up CTI console
-      SP.functions.updateAgentStatusText("ready", ("Call from: " + conn.parameters.From));
+      SP.functions.updateAgentStatusText("ready", ( conn.parameters.From), true);
       // Enable answer button and attach to incoming call
       SP.functions.attachAnswerButton(conn);
       SP.functions.setRingState();
@@ -398,6 +405,7 @@ $(function() {
         SP.functions.detachHoldButtons();
         SP.functions.hideCallData();
         SP.functions.notReady();
+        SP.functions.setIdleState();
 
         $(".number").unbind();
         SP.currentCall = null;
