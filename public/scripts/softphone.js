@@ -110,10 +110,16 @@ $(function() {
     }
 
     SP.functions.setOnCallState = function() {
+
         $("#action-buttons > .answer").hide();
         $("#action-buttons > .call").hide();
         $("#action-buttons > .mute").show();
-        $("#action-buttons > .hold").show();
+
+        //can not hold outbound calls, so disable this
+        if (SP.calltype == "Inbound") {
+            $("#action-buttons > .hold").show();
+        }
+
         $("#action-buttons > .hangup").show();
         $('div.agent-status').show();
     }
@@ -184,7 +190,8 @@ $(function() {
     SP.functions.attachHoldButton = function(conn) {
       $("#action-buttons > button.hold").click(function() {
          console.dir(conn);
-         $.post("/request_hold", { "from":SP.username, "callsid":conn.parameters.CallSid }, function(data) {
+         //can't hold outbound calls from Twilio client
+         $.post("/request_hold", { "from":SP.username, "callsid":conn.parameters.CallSid, "calltype":SP.calltype }, function(data) {
              //Todo: handle errors
              //Todo: change status in future
              SP.functions.attachUnHold(conn, data);
@@ -368,7 +375,7 @@ $(function() {
 
         SP.currentCall = conn;
         SP.functions.attachMuteButton(conn);
-        SP.functions.attachHoldButton(conn);
+        SP.functions.attachHoldButton(conn, SP.calltype);
 
         //send status info
         $.post("/track", { "from":SP.username, "status":"OnCall" }, function(data) {
