@@ -335,7 +335,7 @@ end
 #Twiml response for hold, currently uses Monkey as hold music
 post '/hold' do
     response = Twilio::TwiML::Response.new do |r|
-      r.Play "https://demo.twilio.com/hellomonkey/monkey.mp3", :loop=>0 
+      r.Play "http://com.twilio.sounds.music.s3.amazonaws.com/ClockworkWaltz.mp3", :loop=>0 
     end
 
     puts response.text
