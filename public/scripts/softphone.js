@@ -10,6 +10,7 @@ $(function() {
     SP.state.calltype = "";
     SP.username = "default_client";
     SP.currentCall = null;  //instance variable for tracking current connection
+    SP.requestedHold = false; //set if agent requested hold button
 
 
 
@@ -190,6 +191,7 @@ $(function() {
     SP.functions.attachHoldButton = function(conn) {
       $("#action-buttons > button.hold").click(function() {
          console.dir(conn);
+         SP.requestedHold = true;
          //can't hold outbound calls from Twilio client
          $.post("/request_hold", { "from":SP.username, "callsid":conn.parameters.CallSid, "calltype":SP.calltype }, function(data) {
              //Todo: handle errors
@@ -394,7 +396,14 @@ $(function() {
       // Enable answer button and attach to incoming call
       SP.functions.attachAnswerButton(conn);
       SP.functions.setRingState();
-  
+
+      if (SP.requestedHold == true) {
+        //auto answer
+        SP.requestedHold = false;
+        $("#action-buttons > button.answer").click();
+        
+
+      }
 
 
 
