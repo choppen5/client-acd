@@ -218,10 +218,10 @@ post '/handledialcallstatus' do
     mongosidinfo = {}
     mongosidinfo = mongocalls.find_one ({_id: sid})
     if mongosidinfo
-        mongoagent = mongosidinfo["agent"]   ## TODO: need to more safely access this array element.. If no agents are returned this will puke.
+        mongoagent = mongosidinfo["agent"]   
         mongoagents.update({_id: mongoagent}, { "$set" => {status:  "Missed"}}, {upsert: false})
     end
-      
+
     response = Twilio::TwiML::Response.new do |r| 
         ## Change agent status for agents that missed calls
         r.Redirect('/voice')
