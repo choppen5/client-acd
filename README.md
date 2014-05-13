@@ -3,7 +3,7 @@ client-acd
 
 Twilio ACD example - written with Ruby and HTML, Javascript,  websockets on the front end.  Deployable to Heroku. Embedable in Salesforce Open CTI.
 
-![TwilioSoftphone](http://uploadir.com/u/cm5el1v7)
+![TwilioSoftphone](http://uploadir.com/u/vepiqfxq)
 
 ##Features
 - Agent presence (ready/not ready buttons)
