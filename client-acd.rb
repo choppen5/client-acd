@@ -95,7 +95,7 @@ get '/' do
         client_name = default_client
   end
 
-  erb :index, :locals => {:anycallerid => anycallerid}
+  erb :index, :locals => {:anycallerid => anycallerid, :client_name => client_name}
 end
 
 ## Returns a token for a Twilio client

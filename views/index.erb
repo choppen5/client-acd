@@ -16,6 +16,7 @@
 
 </head>
 <body>
+  <div id="client_name" hidden="true"><%= client_name %></div>
   <div id="softphone" class="softphone">
 
     <div id="agent-status-controls" class="clearfix">
@@ -60,6 +61,7 @@
 
 
      <div id="callerid-entry">
+      <input style="visibility:<%= anycallerid %>" placeholder="Change your callerid"></input>
       <input style="visibility:<%= anycallerid %>" placeholder="Change your callerid"></input>
     </div><!-- /number-entry" -->
 

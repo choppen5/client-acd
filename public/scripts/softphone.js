@@ -8,7 +8,7 @@ $(function() {
     SP.state = {};
     SP.state.callNumber = null;
     SP.state.calltype = "";
-    SP.username = "default_client";
+    SP.username = $('#client_name').text();
     SP.currentCall = null;  //instance variable for tracking current connection
     SP.requestedHold = false; //set if agent requested hold button
 
@@ -297,7 +297,7 @@ $(function() {
     if ( window.self === window.top ) {  
           console.log("Not in an iframe, assume we are using default client");
           var defaultclient = {}
-          defaultclient.result = "name@example.org";
+          defaultclient.result = SP.username;
           SP.functions.registerTwilioClient(defaultclient);
       } else 
       {
