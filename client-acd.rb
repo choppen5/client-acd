@@ -256,6 +256,7 @@ post '/dial' do
           d.Number number
         end
     end
+    puts response.text
     response.text
 end
 ######### End of Twilio methods
@@ -308,6 +309,12 @@ get '/getcallerid' do
     if agent
        callerid = agent["callerid"]
     end
+
+    unless callerid
+      callerid = caller_id  #set to default env variable callerid
+    end
+
+    puts "returning callerid for #{from} = #{callerid}"
     return callerid
 
 end
