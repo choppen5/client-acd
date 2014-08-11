@@ -12,12 +12,12 @@ Twilio ACD example - written with Ruby and HTML, Javascript,  websockets on the 
 - Twilio Client - delivery to calls in the broswer
 - Realtime notifications of calls in queue, ready agents
 - Outbound calls, click2call from Salesforce
+- Hold
+- Mute
 
 ##Todo - future features:
-- Allow agent to choose to accept calls on a external number (mobile or desk), not just in-browser
 - Transfer
-- Hold
-- Voicemail
+- Allow agent to choose to accept calls on a external number (mobile or desk), not just in-browser
 - Queue timeout to voicemail - give callers an option to leave a voicemail after X time
 - Reporting  
 
