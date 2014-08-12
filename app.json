@@ -20,6 +20,9 @@
     },
     "twilio_app_id": {
             "description": "Application Id - you must create app in your Twilio Account -> Dev Tools ->  Twiml Apps"
+    },
+    "twilio_dqueue_url": {
+            "description": "This will be the url of this newly create  heroku app + /voice, ie http://myapp.herokuapp.com/voice"
     }
   }
 }

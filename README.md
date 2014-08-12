@@ -34,34 +34,37 @@ For Salesforce OpenCTI:
 
 ### Install:
 
-Use the Heroku button 
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-or
+To get your configuration variables:
+
+### Twilio Config
+- Create a Twilio Appid 
+  - you will need this for subseqent steps to set the twilio_app_id.
+- Dreate a Twilio App in Devtool -> TwimlApps -> Create App (note the app id created)
+  - set name for example "Client-acd".    
+  - Note the app id created here. You will need it for later.  
+  - After you create a Heroku app below, you will need to come back to this Twilio Application, and set the Voice URL to point to your newely created Heroku URL + /dial.
+  - IE, http://myapp.herokuapp.com/dial will be the URL for this App
+
+- Buy a Twilio phone number - you will need this for subseqent steps.
+  - Note the Phone number created here. You will need it for later for the twilio_caller_id parameter.  
+
+
+
+### Deploy to Heroku ####
+To deploy to Heroku:
+
+#### Option 1 - use Heroku button ####
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy) 
+
+-  Fill out the Config variables 
+
+#### Option 2 - download and run locally/deploy to Heroku manually:
+
 
 `git clone https://github.com/choppen5/client-acd.git`
 
 `cd client-acd `
 
-
-To get your configuration variables:
-
-(You can either install and code locally, and use ngrok to reach your app, or deply direclty to heroku and test there).
-
-### Twilio Config
-1. Create a Twilio Appid 
- - you will need this for subseqent steps to set the twilio_app_id.
- - create a Twilio App in Devtool -> TwimlApps -> Create App (note the app id created)
- - set name for example "Client-acd".    
- - Note the app id created here. You will need it for later.  
- - After you create a Heroku app/URL, you will need to come back to this Twilio Application, and set the Voice URL to point to your newely created Heroku URL. 
-
-2. Buy a Twilio phone number - you will need this for subseqent steps.
- - Note the Phone number created here. You will need it for later for the twilio_caller_id parameter.  
- - After you create your Heroku app, you will need to come back to this Twilio Phone number and set the VoiceURL parameter to point to your new Heroku app.
-
-
-### Deploy to Heroku ####
-To deploy to Heroku:
 
 `heroku create` 
 ( note the name of the created Heroku app, such as "http://myapp.herokuapp.com")
@@ -143,14 +146,14 @@ This will start the process - locally for testing. To use this with Salesforce, 
 
 
 
-### Salesforce configuration
-1. Go to Call Centers >  Create
-2. Import a call center config included, DemoAdapterTwilio.xml
--- after import, change the paramter CTI Adapter URL to <https://<insert yourherokuappurl>
--- add yourself to the call center under "Manage Call Center users" > Add more users > (find)
+### Salesforce configuration ###
+1. Go to Call Centers >  Create:
+-- Import a call center config included, DemoAdapterTwilio.xml
+  - after import, change the paramter CTI Adapter URL to <https://<insert yourherokuappurl>
+  - add yourself to the call center under "Manage Call Center users" > Add more users > (find)
 3. You should now see a CTI adapter under the Contact tabs.  However, you want to use the Service Cloud Console for all cti calls (which prevens browser refreshes that would hang up calls)
 4. To create a service cloud console:
--- Setup > Create > Apps > New
+- Setup > Create > Apps > New
 -- Choose "Console" for type of app
 -- give it a name, such as "Twilio ACD"
 -- Accept default for logo 
