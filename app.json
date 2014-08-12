@@ -7,8 +7,20 @@
   "env": {
     "RAILS_ENV": "production",
     "twilio_account_token": {
-            "description": "Your Twilio account Id",
-            "value": ""
+            "description": "Your Twilio account Id"
+    },
+    "twilio_account_token": {
+            "description": "Your Twilio account token" 
+    },
+     "twilio_caller_id": {
+            "description": "Must be a Twilio number in your account or validated number" 
+    },
+    "twilio_queue_name": {
+            "description": "User defined name of queue",
+            "value"      : "CustomerService"
+    },
+    "twilio_app_id": {
+            "description": "Application Id - you must create app in your Twilio Account -> Dev Tools ->  Twiml Apps"
     }
   }
 }
