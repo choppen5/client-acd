@@ -34,6 +34,10 @@ For Salesforce OpenCTI:
 
 ### Install:
 
+Use the Heroku button 
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+or
+
 `git clone https://github.com/choppen5/client-acd.git`
 
 `cd client-acd `
