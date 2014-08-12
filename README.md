@@ -5,6 +5,9 @@ Twilio ACD example - written with Ruby and HTML, Javascript,  websockets on the 
 
 ![TwilioSoftphone](http://uploadir.com/u/vepiqfxq)
 
+For a one minute video demo: [YouTube](https://www.youtube.com/watch?v=kM5Ty0cO-AU)
+
+
 ##Features
 - Agent presence (ready/not ready buttons)
 - Twilio Queues
