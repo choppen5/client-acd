@@ -5,7 +5,6 @@
   "success_url": "/blob/master/README.md",
   "addons": ["mongohq"],
   "env": {
-    "RAILS_ENV": "production",
     "twilio_account_token": {
             "description": "Your Twilio account Id"
     },
