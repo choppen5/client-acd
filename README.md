@@ -1,7 +1,7 @@
 client-acd
 ==========
 
-Twilio ACD example - written with Ruby and HTML, Javascript,  websockets on the front end.  Deployable to Heroku. Embedable in Salesforce Open CTI.
+Twilio ACD example - written with Ruby and HTML, Javascript,  websockets on the front end.  Deployable to Heroku. Embeddable in Salesforce Open CTI.
 
 ![TwilioSoftphone](http://uploadir.com/u/vepiqfxq)
 
@@ -51,40 +51,31 @@ To get your configuration variables:
 - Buy a Twilio phone number - you will need this for subseqent steps.
   - Note the Phone number created here. You will need it for later for the twilio_caller_id parameter.  
 
+- Set the Voice URL for your app: For the app you created for twilio_app_id, now set the Heroku URL, to the /dial path. For example, if you created a Heroku app called  "http://myapp.herokuapp.com" you would set the Voice URL of your app to  http://myapp.herokuapp.com/dial.  
+
 
 
 ### Deploy to Heroku ####
 To deploy to Heroku:
 
-#### Option 1 - use Heroku button ####
+#### Install option 1 - use Heroku button *Recommended option* ####
+
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy) 
 
--  Fill out the Config variables 
+-  Fill out the Config variables - this will create a new Heroku app and produce a new Heroku URL for the app
+-  Complete the [Twilio Config steps above with your new Heroku URL](https://github.com/choppen5/client-acd#twilio-config)
 
-#### Option 2 - download and run locally/deploy to Heroku manually:
-
-
-`git clone https://github.com/choppen5/client-acd.git`
-
-`cd client-acd `
-
+#### Install option 2 
+- Download and run locally, then deploy to Heroku manually.
 
 `heroku create` 
-( note the name of the created Heroku app, such as "http://myapp.herokuapp.com")
-- Then enable websockets
+this will create a Heroku URL you can use to complete the [Twilio Config steps above with your new Heroku URL](https://github.com/choppen5/client-acd#twilio-config)
 
-`heroku labs:enable websockets`
 - Install MongoHQ
 
 `heroku addons:add mongohq`
 
-This will produce a url for mongo such as "mongodb://heroku:762d44203xxxx@servername.mongohq.com:10008/app1111111 - you can use the URL locally too.  To use the code locally, you need to set a local environment varialbe MONGOHQ_URL.
-
-To see your MongoHQ URL,use the command: 
-
-`heroku config`
-
-You can set ALL the environment variables with this command 
+Set your Heroku config - you can set ALL the environment variables with this command 
 (replace with your auth tokens etc):
 
 `heroku config:set twilio_account_sid=AC11ecc09xxxxxx`   
@@ -93,12 +84,6 @@ You can set ALL the environment variables with this command
 `twilio_queue_name=CustomerService` 
 `twilio_dqueue_url=http://myapp.herokuapp.com/voice`
 `twilio_app_id=APab79b652xxxxxxxxx` 
-
-
-### Twilio Config
-- Set the Voice URL for your app: For the app you created for twilio_app_id, now set the Heroku URL, to the /dial path. For example, if you created a Heroku app called  "http://myapp.herokuapp.com" you would set the Voice URL of your app to  http://myapp.herokuapp.com/dial.  
-
-- Set the Voice URL for the Twilio Phone number you set to point to your Heroku app on the /voice, for example http://myapp.herokuapp.com/voice. This will route new calls to the /voice path of your new heroku app.
 
 
 To check your config variables:
@@ -117,9 +102,15 @@ To run client ACD, you need a number of environment variables, either to run it 
 
 Set up code to run locally - this assumes you have the correct Ruby environment or can get it running:
 
+`git clone https://github.com/choppen5/client-acd.git`
+
+`cd client-acd`
+
 `bundle install` 
 
 5. set environment variables:
+
+The method of setting these will vary by platform.  On Mac, you can: "export twilio_account_sid=AC11ecc_your_account" but that will only last during that session. Another option is edit you .bash_profile, and add:  export twilio_account=sid=C11ecc_your_account for all the variables.
 
 
 twilio_account_sid=**AC11ecc_your_account**
@@ -137,8 +128,6 @@ twilio_dqueue_url=https://your.localserver.com/voice
 MONGOHQ_URL="mongodb://heroku:FSDFDSFSDFDSFSDFS@lex.mongohq.com:10079/XXXXXX"
 
 
-The method of setting these will vary by platform.  On Mac, you can: "export twilio_account_sid=AC11ecc_your_account" but that will only last during that session. Another option is edit you .bash_profile, and add:  export twilio_account=sid=C11ecc_your_account for all the variables.
-
 ### Starting the process locally
 
 To start the process, if everything is set, within the client-acd folder:
@@ -150,23 +139,23 @@ This will start the process - locally for testing. To use this with Salesforce, 
 
 
 ### Salesforce configuration ###
-1. Go to Call Centers >  Create:
--- Import a call center config included, DemoAdapterTwilio.xml
-  - after import, change the paramter CTI Adapter URL to <https://<insert yourherokuappurl>
+1. Go to Call Centers >  Create
+  - Import a call center config included, DemoAdapterTwilio.xml
+  -- after import, change the paramter CTI Adapter URL to the Heroku URL created in the first steps https:/<insert yourherokuappurl
   - add yourself to the call center under "Manage Call Center users" > Add more users > (find)
 3. You should now see a CTI adapter under the Contact tabs.  However, you want to use the Service Cloud Console for all cti calls (which prevens browser refreshes that would hang up calls)
-4. To create a service cloud console:
-- Setup > Create > Apps > New
--- Choose "Console" for type of app
--- give it a name, such as "Twilio ACD"
--- Accept default for logo 
--- For tabs, add some tabs to your Service Cloud Console, such as Contacts, Cases
--- accept default for step5 "choose how records display"
--- Set visibility to all (for dev orgs)
-You've now created an app!  You will see you'r console in the App dropdown, for example "Twilio ACD"
+4. To create a service cloud console
+  - Setup > Create > Apps > New
+  - Choose "Console" for type of app
+  - give it a name, such as "Twilio ACD"
+  - Accept default for logo 
+  - For tabs, add some tabs to your Service Cloud Console, such as Contacts, Cases
+  - accept default for step5 "choose how records display"
+  - Set visibility to all (for dev orgs)
+  - You've now created an app!  You will see you'r console in the App dropdown, for example "Twilio ACD"
 
 5.  Configuring screenpops
-- you can configure screenpop response, such as to pop the search screen, in Setup > Call Centers >  (your call center) -> Softphone Layout.  
+  - you can configure screenpop response, such as to pop the search screen, in Setup > Call Centers >  (your call center) -> Softphone Layout.  
 
 
 
