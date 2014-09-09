@@ -306,7 +306,7 @@ input {
   margin-bottom: 6px;
 }
 
-#call-data, #callerid-entry {
+#call-data {
   display: none;
 }
 
