@@ -42,16 +42,14 @@ To get your configuration variables:
 ### Twilio Config
 - Create a Twilio Appid 
   - you will need this for subseqent steps to set the twilio_app_id.
-- Dreate a Twilio App in Devtool -> TwimlApps -> Create App (note the app id created)
-  - set name for example "Client-acd".    
+- Create a Twilio App in Devtool -> TwimlApps -> Create App (note the app id created)
+  - Set name - for example-  "Client-acd".    
   - Note the app id created here. You will need it for later.  
-  - After you create a Heroku app below, you will need to come back to this Twilio Application, and set the Voice URL to point to your newely created Heroku URL + /dial.
-  - IE, http://myapp.herokuapp.com/dial will be the URL for this App
+    - After you create a Heroku app below, you will need to come back to this Twilio Application, and set the Voice URL to point to your newely created Heroku URL + /dial.
+      - For example, http://myapp.herokuapp.com/dial will be the URL for this App
 
 - Buy a Twilio phone number - you will need this for subseqent steps.
   - Note the Phone number created here. You will need it for later for the twilio_caller_id parameter.  
-
-- Set the Voice URL for your app: For the app you created for twilio_app_id, now set the Heroku URL, to the /dial path. For example, if you created a Heroku app called  "http://myapp.herokuapp.com" you would set the Voice URL of your app to  http://myapp.herokuapp.com/dial.  
 
 
 
@@ -64,6 +62,8 @@ To deploy to Heroku:
 
 -  Fill out the Config variables - this will create a new Heroku app and produce a new Heroku URL for the app
 -  Complete the [Twilio Config steps above with your new Heroku URL](https://github.com/choppen5/client-acd#twilio-config)
+-  After creating the Heroku app, note the URL.  Back in Twilio, set the voice URL for your app: For the app you created for twilio_app_id, now set the Heroku URL, to the /dial path. For example, if you created a Heroku app called  "http://myapp.herokuapp.com" you would set the Voice URL of your app to  http://myapp.herokuapp.com/dial.  
+
 
 #### Install option 2 
 - Download and run locally, then deploy to Heroku manually.
