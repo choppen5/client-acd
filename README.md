@@ -62,7 +62,11 @@ To deploy to Heroku:
 
 -  Fill out the Config variables - this will create a new Heroku app and produce a new Heroku URL for the app
 -  Complete the [Twilio Config steps above with your new Heroku URL](https://github.com/choppen5/client-acd#twilio-config)
--  After creating the Heroku app, note the URL.  Back in Twilio, set the voice URL for your app: For the app you created for twilio_app_id, now set the Heroku URL, to the /dial path. For example, if you created a Heroku app called  "http://myapp.herokuapp.com" you would set the Voice URL of your app to  http://myapp.herokuapp.com/dial.  
+-  After creating the Heroku app, note the URL.  
+--  Go back in your Twilio Account, and set the voice URL for your Twilio app that was created in the pre-requesites. You have created a new Heroku app witha  URL, you can now set the path to that URL and add the /dial path. For example, if you created a Heroku app called  "http://myapp.herokuapp.com" you would set the Voice URL of your app to  http://myapp.herokuapp.com/dial.  
+
+![TwimlApp](http://uploadir.com/u/scshlxls)
+
 
 
 #### Install option 2 
