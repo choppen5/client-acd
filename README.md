@@ -49,7 +49,8 @@ To get your configuration variables:
       - For example, http://myapp.herokuapp.com/dial will be the URL for this App
 
 - Buy a Twilio phone number - you will need this for subseqent steps.
-  - Note the Phone number created here. You will need it for later for the twilio_caller_id parameter.  
+  - Note the Phone number created here. You will need it for later for the twilio_caller_id parameter.
+  - You will also use this phone number to accept new calls once you create a Heroku (or local tunnel) deploy. You will add to your Twilio voice url: http://myapp.herokuapp.com/voice to accept new calls.
 
 
 
@@ -67,7 +68,11 @@ To deploy to Heroku:
 
 ![TwimlApp](http://uploadir.com/u/scshlxls)
 
+-- You now need to create configure your inbound number with your new Heroku url.  Add your Heroku app url + /voice to your Twilio voice URL.
 
+![TiwmlApp](http://uploadir.com/u/m7k57r2s)
+
+And that's it! You can take inbound calls!
 
 #### Install option 2 
 - Download and run locally, then deploy to Heroku manually.
