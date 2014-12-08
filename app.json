@@ -2,7 +2,7 @@
   "name": "client-acd",
   "description": "Twilio softphone with ACD",
   "website": "https://github.com/choppen5/client-acd",
-  "success_url": "/blob/master/README.md",
+  "success_url": "/",
   "addons": ["mongohq"],
   "env": {
     "twilio_account_sid": {
