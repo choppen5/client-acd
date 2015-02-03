@@ -80,9 +80,9 @@ And that's it! You can take inbound calls!
 `heroku create` 
 this will create a Heroku URL you can use to complete the [Twilio Config steps above with your new Heroku URL](https://github.com/choppen5/client-acd#twilio-config)
 
-- Install MongoHQ
+- Install MongoLab
 
-`heroku addons:add mongohq`
+`heroku addons:add mongolab`
 
 Set your Heroku config - you can set ALL the environment variables with this command 
 (replace with your auth tokens etc):
@@ -134,7 +134,7 @@ twilio_queue_name=**CustomerService**
 
 twilio_dqueue_url=https://your.localserver.com/voice 
 
-MONGOHQ_URL="mongodb://heroku:FSDFDSFSDFDSFSDFS@lex.mongohq.com:10079/XXXXXX"
+MONGOLAB_URI="mongodb://heroku:FSDFDSFSDFDSFSDFS@lex.mongolab.com:10079/XXXXXX"
 
 
 ### Starting the process locally

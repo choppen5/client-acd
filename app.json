@@ -3,7 +3,7 @@
   "description": "Twilio softphone with ACD",
   "website": "https://github.com/choppen5/client-acd",
   "success_url": "/",
-  "addons": ["mongohq"],
+  "addons": ["mongolab"],
   "env": {
     "twilio_account_sid": {
             "description": "Your Twilio account Id"
